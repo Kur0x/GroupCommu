@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/SHA512.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/SHA512.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/TCPClient.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/TCPServer.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/TCPServer.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/common.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gm_top.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/m_top.cpp" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>
