@@ -41,7 +41,7 @@ void send_req(u_int8_t type,string msg="")
 	if (msg == "")
 	{
 		head.len = 0;
-		server->SendPacket(&head, HEADLEN);
+		server->SendPacket((char*)&head, HEADLEN);
 	}
 	else {
 		head.len = msg.size();
@@ -62,26 +62,26 @@ void onRecv(ClientData *data)
 
 	string msg;
 	switch (header->proto_type) {
-	case PROTO_PUB_PARA:
+	case PROTO_PUB_PARA:{
 		group_sig::public_para* p=new group_sig::public_para;
 		memcpy(p, data->recv_playload + HEADLEN, header->len);
 		m = new group_sig::member(id, *p);
 
 		//send PROTO_JOIN_GROUP
 		send_req(PROTO_JOIN_GROUP,m->JoinGroupMsg(psk));
-		break;
-	case PROTO_JOIN_GROUP:
+		break;}
+	case PROTO_JOIN_GROUP:{
 		msg=get_str(data->recv_playload);
 		m->onRecvV(msg);
-		break;
-	case PROTO_KEY_EX:
+		break;}
+	case PROTO_KEY_EX:{
 		msg = get_str(data->recv_playload);
 		m->onKeyExchangeRequestRecv(msg);
-		break;
-	case PROTO_KEY_BROADCAST:
+		break;}
+	case PROTO_KEY_BROADCAST:{
 		msg = get_str(data->recv_playload);
 		m->onGroupKeyBoardcastRecv(msg);
-		break;
+		break;}
 	default:
 		break;
 	}
