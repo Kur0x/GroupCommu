@@ -2,7 +2,8 @@
 
 
 
-TCPServer::TCPServer(u_int32_t ip, uint16_t port) {
+TCPServer::TCPServer(u_int32_t ip, uint16_t port):ip(ip),portno(port) {
+
 	for (int i = 0;i < CLIENT_MAX;i++) {
 		client_fds[i].send_len = 0;
 		client_fds[i].recv_len = 0;
