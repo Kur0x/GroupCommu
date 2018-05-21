@@ -21,36 +21,38 @@ using std::string;
 
 class TCPServer {
 public:
-    static constexpr int QUEUE = 20;
-    static constexpr int CLIENT_MAX = 1000;
+	static constexpr int QUEUE = 20;
+	static constexpr int CLIENT_MAX = 1000;
+	static constexpr int BCAST_PORT = 9999;
+	const char* BCAST_IP = "255.255.255.255";
 
-    TCPServer(u_int32_t ip, uint16_t port);
+	TCPServer(u_int32_t ip, uint16_t port);
 
-    ~TCPServer();
+	~TCPServer();
 
-    void StartServer();
+	void StartServer();
 
-    void SendPacket(string id, char *playload, size_t len);
+	void SendPacket(string id, char *playload, size_t len);
 
-    void setOnRecvCallBack(void(*callBack)(ClientData *));
+	void setOnRecvCallBack(void(*callBack)(ClientData *));
+
+	void Broadcast(char *playload, size_t len);
 
 private:
-    u_int32_t ip;
-    uint16_t portno;
-    struct sockaddr_in serv_addr;
-    int server_sockfd;
-    ClientData client_fds[CLIENT_MAX];
+	u_int32_t ip;
+	uint16_t portno;
+	struct sockaddr_in serv_addr;
+	int server_sockfd;
+	ClientData client_fds[CLIENT_MAX];
 
-    //ClientData* cli_data;
+	//ClientData* cli_data;
 
-    //å›žè°ƒå‡½æ•°
-    void (*onRecvCallBack)(ClientData *data);
+	//»Øµ÷º¯Êý
+	void(*onRecvCallBack)(ClientData *data);
 
 
-    int tcp_recv_server(int clifd, char *data, size_t len);
+	int tcp_recv_server(int clifd, char *data, size_t len);
 
-    int tcp_send_server(int serverfd, const char *data, size_t len);
+	int tcp_send_server(int serverfd, const char *data, size_t len);
 
 };
-
-
