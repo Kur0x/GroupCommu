@@ -2,7 +2,8 @@
 
 
 TCPServer::TCPServer(u_int32_t ip, uint16_t port) : ip(ip), portno(port) {
-
+    auto Log = get("console");
+    Log->info("Initializing TCP server");
     for (int i = 0; i < CLIENT_MAX; i++) {
         client_fds[i].stat = ClientData::TO_RECV;
         client_fds[i].send_len = 0;
@@ -19,6 +20,8 @@ TCPServer::~TCPServer() {
 }
 
 void TCPServer::StartServer() {
+    auto Log = get("console");
+    Log->info("Starting server");
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = ip;
@@ -150,9 +153,13 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
     }
 
     do {
+        auto Log = get("console");
+        Log->info("Server sending to client");
         ret = send(clientfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
     //log->debug("send return:{}", ret);
+    auto Log = get("console");
+    Log->info("Sending done");
 
     int i;
     for (i = 0; i < CLIENT_MAX; i++) {
@@ -170,10 +177,12 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
 int TCPServer::tcp_recv_server(int clifd, char *data, size_t len) {
     if (!data) {
         //log->debug("recv_playload is null");
-
+        auto Log = get("console");
+        Log->error("Null payload recved from client");
         return -1;
     }
-
+    auto Log = get("console");
+    Log->info("Received msg from client");
     int ret = recv(clifd, data, len, 0);
     //log->debug("read return:{}", ret);
     return ret;

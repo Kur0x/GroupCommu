@@ -15,6 +15,8 @@ string id;//id，由命令行输入
 ZZ psk;
 
 void send_req(u_int8_t type, string msg = "") {
+    auto Log = get("console");
+    Log->info("Client sending request...");
     header_t head;
     head.proto_ori = PROTO_C2S;
     head.proto_type = type;
@@ -37,6 +39,8 @@ void onRecv_m(ClientData *data) {
     string msg;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
+            auto Log = get("console");
+            Log->info("Client recv public para msg");
 //		group_sig::public_para* p=new group_sig::public_para;
             char *p = new char[header->len + 1];
             memcpy(p, data->recv_playload + HEADLEN, header->len);
@@ -66,16 +70,22 @@ void onRecv_m(ClientData *data) {
             break;
         }
         case PROTO_JOIN_GROUP: {
+            auto Log = get("console");
+            Log->info("Client recv join group msg");
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
             break;
         }
         case PROTO_KEY_EX: {
+            auto Log = get("console");
+            Log->info("Client recv key exchg msg");
             msg = get_str(data->recv_playload);
             m->onKeyExchangeRequestRecv(msg);
             break;
         }
         case PROTO_KEY_BROADCAST: {
+            auto Log = get("console");
+            Log->info("Client recv broadcast msg");
             msg = get_str(data->recv_playload);
             m->onGroupKeyBoardcastRecv(msg);
             break;
@@ -86,10 +96,14 @@ void onRecv_m(ClientData *data) {
 }
 
 void onConnected(ClientData */*data*/) {
+    auto Log = get("console");
+    Log->info("Client requesting public para msg...");
     send_req(PROTO_PUB_PARA, id);
 }
 
 int main_m(string ip, u_int16_t port) {
+    auto Log = get("console");
+    Log->info("starting member at " + ip);
     client = new TCPClient(inet_addr(ip.c_str()), port);
     client->setOnConnectedCallBack(onConnected);
     client->setOnRecvCallBack(onRecv_m);

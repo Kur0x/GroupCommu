@@ -6,6 +6,8 @@
 
 
 TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
+    auto Log = get("console");
+    Log->info("starting TCP client");
     cli_data = new ClientData;
     cli_data->send_len = 0;
     cli_data->recv_len = 0;
@@ -18,6 +20,8 @@ TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
 
 
 void TCPClient::ConnectServer() {
+    auto Log = get("console");
+    Log->info("Client connecting server...");
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = ip;
@@ -36,6 +40,7 @@ void TCPClient::ConnectServer() {
 //    log->info("tcp block connected");
     if (onConnectedCallBack != nullptr) {
         onConnectedCallBack(cli_data);
+        Log->info("Connected to Server");
     }
     tcp_block();
 //    }
@@ -52,12 +57,17 @@ void TCPClient::tcp_block() {
         }
         if (n < 0) {
 //            log->critical("ERROR recv");
+            auto Log = get("console");
+            Log->error("Receiving msg from server error");
             exit(0);
         }
+        auto Log = get("console");
+        Log->info("Received msg from server");
         if (onRecvCallBack != nullptr) {
             onRecvCallBack(cli_data);
         }
         if (cli_data->stat == ClientData::TO_SEND) {
+            Log->info("sending msg to server");
             n = tcp_send_server(cli_data->serverfd, cli_data->send_playload, cli_data->send_len);
             if (n < 0) {
 //                log->critical("ERROR send");
@@ -79,6 +89,8 @@ int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
         ret = send(serverfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
 //    log->debug("send return:{}", ret);
+    auto Log = get("console");
+    Log->info("Client sending done");
     cli_data->stat = ClientData::TO_RECV;
     return ret;
 }
@@ -86,6 +98,8 @@ int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
 int TCPClient::tcp_recv_server(int clifd, char *data, size_t len) {
     if (!data) {
 //        log->debug("recv_playload is null");
+        auto Log = get("console");
+        Log->error("Null payload from server");
         return -1;
     }
 
