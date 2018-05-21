@@ -25,39 +25,42 @@
 
 class TCPClient {
 public:
-    TCPClient(u_int32_t ip, uint16_t port);
+	TCPClient(u_int32_t ip, uint16_t port);
 
-    ~TCPClient();
+	~TCPClient();
 
-    void setOnRecvCallBack(void(*callBack)(ClientData *));
+	void setOnRecvCallBack(void(*callBack)(ClientData *));
 
-    void setOnConnectedCallBack(void (*callBack)(ClientData *));
+	void setOnConnectedCallBack(void(*callBack)(ClientData *));
 
-    void setOnFinCallBack(void (*callBack)(ClientData *));
+	void setOnFinCallBack(void(*callBack)(ClientData *));
 
-    void ConnectServer();
+	void ConnectServer();
 
-    void SendPacket(char *playload, size_t len);
+	void SendPacket(char *playload, size_t len);
+
+	void RecvBroadcast(char *playload, size_t len);
 
 private:
-    u_int32_t ip;
-    uint16_t portno;
-    struct sockaddr_in serv_addr;
+	u_int32_t ip;
+	uint16_t portno;
+	struct sockaddr_in serv_addr;
+	static constexpr int BCAST_PORT = 9999;
 
-    //å›žè°ƒå‡½æ•°
-    void (*onRecvCallBack)(ClientData *data);
+	//»Øµ÷º¯Êý
+	void(*onRecvCallBack)(ClientData *data);
 
-    void (*onConnectedCallBack)(ClientData *data);
+	void(*onConnectedCallBack)(ClientData *data);
 
-    void (*onFinCallBack)(ClientData *data);
+	void(*onFinCallBack)(ClientData *data);
 
-    ClientData *cli_data = nullptr;
+	ClientData *cli_data = nullptr;
 
-    int tcp_recv_server(int clifd, char *data, size_t len);
+	int tcp_recv_server(int clifd, char *data, size_t len);
 
-    int tcp_send_server(int serverfd, const char *data, size_t len);
+	int tcp_send_server(int serverfd, const char *data, size_t len);
 
-    void tcp_block();
+	void tcp_block();
 
 
 };
