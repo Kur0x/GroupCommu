@@ -20,6 +20,8 @@ namespace group_sig
 		explicit GM(long lambda)
 			: lambda(lambda)
 		{
+			rsa_.generateKeyPair();
+			init();
 		}
 
 		void init();

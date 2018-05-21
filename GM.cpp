@@ -1,5 +1,4 @@
 ﻿#include "GM.h"
-#include <MMX/RsaSignature.h>
 
 using namespace group_sig;
 
@@ -18,9 +17,22 @@ using namespace group_sig;
  */
 void GM::init()
 {
-	rsa_.generateKeyPair();
 
-	// TODO network startserver
+//	_ an RSA public key _n;e_,
+//			_ a cyclic group G = hgi of order n in which computing discrete logarithms is
+//	infeasible _e.g. G could be a subgroup of Z _ , for a prime p with nj_p , 1__,
+//			p
+//	_ an element a 2 Z _ _a should be of large multiplicative order modulo both
+//	n
+//	prime factors of n_, and
+//	_ an upper bound _ on the length of the secret keys and a constant _ _ 1
+//	_these parameters are required for the SKLOGLOG signatures_
+	G = Cryptography::findPrime(512);
+	g = Cryptography::findPrimitiveRoot(G);
+
+	a = RandomBnd(G - 2) + 1;//[1,p-1]
+	lambda = 512;
+	epsilon = 5;
 }
 
 public_para GM::getPublicPara() const

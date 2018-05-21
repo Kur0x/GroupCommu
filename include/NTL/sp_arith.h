@@ -324,8 +324,8 @@ sp_CountLeadingZeros(unsigned long x)
 inline long 
 sp_CountLeadingZeros(unsigned long x)
 {
-   long res = NTL_BITS_PER_LONG-NTL_SP_NBITS;
-   x = x << NTL_BITS_PER_LONG-NTL_SP_NBITS;
+    long res = (NTL_BITS_PER_LONG - NTL_SP_NBITS);
+    x = x << (NTL_BITS_PER_LONG - NTL_SP_NBITS);
    while (x < (1UL << (NTL_BITS_PER_LONG-1))) {
       x <<= 1;
       res++;

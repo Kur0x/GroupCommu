@@ -1,37 +1,15 @@
 //1552212 端启航
 #include <iostream>
 #include "MMX/RsaSignature.h"
-#include "MMX/ElGamalSignature.h"
-#include "MMX/Cryptography.h"
-#include "MMX/CA.h"
-#include <fstream>
-#include "MMX/Base64.h"
-#include <sstream>
 #include "TCPServer.h"
 #include "Member.h"
-#include <string>
-#include "TCPClient.h"
 #include "GM.h"
 
-u_int32_t ip;
-u_int16_t port;
 using namespace std;
 
-//PROTOCOL
-#define PROTO_C2S 0x00
-#define PROTO_S2C 0x01
-#define PROTO_PUB_PARA 0x01
-#define PROTO_JOIN_GROUP 0x02
-#define PROTO_KEY_EX 0x03
-#define PROTO_KEY_BROADCAST 0x04
-#define HEADLEN 4
+
 TCPServer *server;
 group_sig::GM *gm;
-struct header_t {
-    uint8_t proto_ori;
-    uint8_t proto_type;
-    uint16_t len;
-};
 
 string hardware_id;//id，由命令行输入
 
@@ -51,11 +29,8 @@ void send_r(string id, u_int8_t type, string msg = "") {
     }
 }
 
-string get_str(char *src) {
-    return string(src + HEADLEN);
-}
 
-void onRecv(ClientData *data) {
+void onRecv_gm(ClientData *data) {
     header_t *header;
     header = (header_t *) (data->recv_playload);
 
@@ -69,10 +44,20 @@ void onRecv(ClientData *data) {
             header_t head;
             head.proto_ori = PROTO_S2C;
             head.proto_type = PROTO_PUB_PARA;
-            head.len = sizeof(group_sig::public_para);
+            string str;
+
+            str += Cryptography::numberToString(p.a) + " ";
+            str += Cryptography::numberToString(p.b) + " ";
+            str += Cryptography::numberToString(p.epsilon) + " ";
+            str += Cryptography::numberToString(p.G) + " ";
+            str += Cryptography::numberToString(p.g) + " ";
+            str += Cryptography::numberToString(p.n) + " ";
+            str += to_string(p.lambda);
+            head.len = str.size();
+
             char *buffer = new char[HEADLEN + head.len];
             memcpy(buffer, &head, HEADLEN);
-            memcpy(buffer + HEADLEN, &p, head.len);
+            memcpy(buffer + HEADLEN, str.c_str(), head.len);
             server->SendPacket(data->id, buffer, HEADLEN + head.len);
             break;
         }
@@ -97,12 +82,12 @@ void onRecv(ClientData *data) {
     }
 }
 
-int main() {
-    ip=inet_addr("192.168.1.2");
-    port=9999;
+int main_gm(string ip, u_int16_t port) {
+    auto Log = get("console");
+    Log->info("starting GM");
     gm = new group_sig::GM(1234);
-    server = new TCPServer(ip, port);
-    server->setOnRecvCallBack(onRecv);
+    server = new TCPServer(inet_addr(ip.c_str()), port);
+    server->setOnRecvCallBack(onRecv_gm);
     server->StartServer();
     return 0;
 }

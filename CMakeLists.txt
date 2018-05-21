@@ -18,6 +18,7 @@ add_executable(GroupCommu main.cpp
         GM.cpp
         gm_top.cpp
         m_top.cpp
+        main.cpp
         Member.cpp
         Member.h
         SHA512.cpp
@@ -28,5 +29,8 @@ add_executable(GroupCommu main.cpp
         TCPServer.h
         TCPServer.cpp
         )
+add_custom_target(libmmx
+        /usr/bin/make -C "${CMAKE_CURRENT_SOURCE_DIR}/lib/MMXlib/")
+target_link_libraries(GroupCommu gmp)
 target_link_libraries(GroupCommu mmx)
 target_link_libraries(GroupCommu ntl)

@@ -24,13 +24,6 @@ void TCPClient::ConnectServer() {
 //    if (inet_pton(AF_INET, ip, &serv_addr.sin_addr) <= 0)
 //        error("ERROR inet_pton");
     serv_addr.sin_port = htons(portno);
-//    pid_t pid = fork();
-//    log->debug("before fork");
-//    if (pid < 0)
-//        error("ERROR fork");
-//    if (pid == 0)
-//    {
-//        log->debug("after fork");
 
     cli_data->serverfd = socket(AF_INET, SOCK_STREAM, 0);
     cli_data->start_time = time(NULL);
