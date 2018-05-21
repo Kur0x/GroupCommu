@@ -47,7 +47,7 @@ private:
 	struct sockaddr_in serv_addr;
 	static constexpr int BCAST_PORT = 9999;
 
-	//»Øµ÷º¯Êý
+    //å›žè°ƒå‡½æ•°
 	void(*onRecvCallBack)(ClientData *data);
 
 	void(*onConnectedCallBack)(ClientData *data);
