@@ -11,6 +11,7 @@ link_directories(${LINK_DIR})
 link_libraries(gmp)
 link_libraries(ntl)
 link_libraries(mmx)
+link_libraries(pthread)
 
 add_executable(GroupCommu main.cpp
         common.h

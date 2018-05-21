@@ -8,6 +8,7 @@ TCPServer::TCPServer(u_int32_t ip, uint16_t port) : ip(ip), portno(port) {
         client_fds[i].stat = ClientData::TO_RECV;
         client_fds[i].send_len = 0;
         client_fds[i].recv_len = 0;
+        client_fds[i].clientfd = 0;
         client_fds[i].recv_playload = new char[ClientData::BUFFER_LEN];
         client_fds[i].send_playload = new char[ClientData::BUFFER_LEN];
     }

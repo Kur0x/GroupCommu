@@ -101,12 +101,19 @@ void onConnected(ClientData */*data*/) {
     send_req(PROTO_PUB_PARA, id);
 }
 
+void onFin(ClientData */*data*/) {
+    auto Log = get("console");
+    Log->info("Connection fin!");
+    exit(0);
+}
+
 int main_m(string ip, u_int16_t port) {
     auto Log = get("console");
     Log->info("starting member at " + ip);
     client = new TCPClient(inet_addr(ip.c_str()), port);
     client->setOnConnectedCallBack(onConnected);
     client->setOnRecvCallBack(onRecv_m);
+    client->setOnFinCallBack(onFin);
     client->ConnectServer();
     return 0;
 }
