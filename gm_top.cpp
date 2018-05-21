@@ -14,6 +14,8 @@ group_sig::GM *gm;
 string hardware_id;//id，由命令行输入
 
 void send_r(string id, u_int8_t type, string msg = "") {
+    auto Log = get("console");
+    Log->info("GM sending response...");
     header_t head;
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
@@ -38,6 +40,8 @@ void onRecv_gm(ClientData *data) {
     ZZ v;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
+            auto Log = get("console");
+            Log->info("GM recv public para request");
             string id = get_str(data->recv_playload);
             data->id = id;
             group_sig::public_para p = gm->getPublicPara();
@@ -62,6 +66,8 @@ void onRecv_gm(ClientData *data) {
             break;
         }
         case PROTO_JOIN_GROUP: {
+            auto Log = get("console");
+            Log->info("GM recv join group request");
             msg = get_str(data->recv_playload);
             v = gm->verify(data->id, msg);
             vv = Cryptography::numberToString(v, false);
@@ -70,6 +76,8 @@ void onRecv_gm(ClientData *data) {
             break;
         }
         case PROTO_KEY_EX: {
+            auto Log = get("console");
+            Log->info("GM recv key exchg msg");
             msg = get_str(data->recv_playload);
             gm->onKeyExchangeResponseRecv(msg);
             msg = gm->getBroadcastMsg();

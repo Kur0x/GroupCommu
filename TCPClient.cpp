@@ -6,18 +6,24 @@
 
 
 TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
-	cli_data = new ClientData;
-	cli_data->send_len = 0;
-	cli_data->recv_len = 0;
-	cli_data->recv_playload = new char[ClientData::BUFFER_LEN];
-	cli_data->send_playload = new char[ClientData::BUFFER_LEN];
-	onRecvCallBack = nullptr;
-	onFinCallBack = nullptr;
-	onConnectedCallBack = nullptr;
+
+    auto Log = get("console");
+    Log->info("starting TCP client");
+    cli_data = new ClientData;
+    cli_data->send_len = 0;
+    cli_data->recv_len = 0;
+    cli_data->recv_playload = new char[ClientData::BUFFER_LEN];
+    cli_data->send_playload = new char[ClientData::BUFFER_LEN];
+    onRecvCallBack = nullptr;
+    onFinCallBack = nullptr;
+    onConnectedCallBack = nullptr;
+
 }
 
 
 void TCPClient::ConnectServer() {
+  auto Log = get("console");
+  Log->info("Client connecting server...");
 	bzero((char *)&serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = ip;
@@ -36,6 +42,7 @@ void TCPClient::ConnectServer() {
 	//    log->info("tcp block connected");
 	if (onConnectedCallBack != nullptr) {
 		onConnectedCallBack(cli_data);
+    Log->info("Connected to Server");
 	}
 	tcp_block();
 	//    }
@@ -52,12 +59,17 @@ void TCPClient::tcp_block() {
 		}
 		if (n < 0) {
 			//            log->critical("ERROR recv");
+                  auto Log = get("console");
+            Log->error("Receiving msg from server error");
 			exit(0);
 		}
+            auto Log = get("console");
+        Log->info("Received msg from server");
 		if (onRecvCallBack != nullptr) {
 			onRecvCallBack(cli_data);
 		}
 		if (cli_data->stat == ClientData::TO_SEND) {
+      Log->info("sending msg to server");
 			n = tcp_send_server(cli_data->serverfd, cli_data->send_playload, cli_data->send_len);
 			if (n < 0) {
 				//                log->critical("ERROR send");
@@ -79,6 +91,8 @@ int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
 		ret = send(serverfd, data, len, 0);
 	} while (ret < 0 && errno == EINTR);
 	//    log->debug("send return:{}", ret);
+      auto Log = get("console");
+    Log->info("Client sending done");
 	cli_data->stat = ClientData::TO_RECV;
 	return ret;
 }
@@ -98,16 +112,16 @@ void TCPClient::RecvBroadcast(char *playload, size_t len)
 {
 	int ret = -1;
 	int sock;
-	struct sockaddr_in server_addr; //·şÎñÆ÷¶ËµØÖ·
-	struct sockaddr_in from_addr; //¿Í»§¶ËµØÖ·
+	struct sockaddr_in server_addr; //æœåŠ¡å™¨ç«¯åœ°å€
+	struct sockaddr_in from_addr; //å®¢æˆ·ç«¯åœ°å€
 	int from_len = sizeof(struct sockaddr_in);
 	int count = -1;
-	fd_set readfd; //¶ÁÎÄ¼şÃèÊö·û¼¯ºÏ
+	fd_set readfd; //è¯»æ–‡ä»¶æè¿°ç¬¦é›†åˆ
 	struct timeval timeout;
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 
-	sock = socket(AF_INET, SOCK_DGRAM, 0); //½¨Á¢Êı¾İ±¨Ì×½Ó×Ö
+	sock = socket(AF_INET, SOCK_DGRAM, 0); //å»ºç«‹æ•°æ®æŠ¥å¥—æ¥å­—
 	if (sock < 0)
 	{
 		perror("sock error");
@@ -119,7 +133,7 @@ void TCPClient::RecvBroadcast(char *playload, size_t len)
 	server_addr.sin_addr.s_addr = htons(INADDR_ANY);
 	server_addr.sin_port = htons(BCAST_PORT);
 
-	//½«µØÖ·½á¹¹°ó¶¨µ½Ì×½Ó×ÖÉÏ
+	//å°†åœ°å€ç»“æ„ç»‘å®šåˆ°å¥—æ¥å­—ä¸Š
 	ret = bind(sock, (struct sockaddr*) &server_addr, sizeof(server_addr));
 	if (ret < 0)
 	{
@@ -132,25 +146,25 @@ void TCPClient::RecvBroadcast(char *playload, size_t len)
 		timeout.tv_sec = 100;
 		timeout.tv_usec = 0;
 
-		//ÎÄ¼şÃèÊö·û¼¯ºÏÇå0
+		//æ–‡ä»¶æè¿°ç¬¦é›†åˆæ¸…0
 		FD_ZERO(&readfd);
-		//½«Ì×½Ó×ÖÃèÊö·û¼ÓÈëµ½ÎÄ¼şÃèÊö·û¼¯ºÏ
+		//å°†å¥—æ¥å­—æè¿°ç¬¦åŠ å…¥åˆ°æ–‡ä»¶æè¿°ç¬¦é›†åˆ
 		FD_SET(sock, &readfd);
 
-		//selectÕìÌıÊÇ·ñÓĞÊı¾İµ½À´
-		ret = select(sock + 1, &readfd, NULL, NULL, &timeout); //ÕìÌıÊÇ·ñ¿É¶Á
+		//selectä¾¦å¬æ˜¯å¦æœ‰æ•°æ®åˆ°æ¥
+		ret = select(sock + 1, &readfd, NULL, NULL, &timeout); //ä¾¦å¬æ˜¯å¦å¯è¯»
 		switch (ret)
 		{
-		case -1: //·¢Éú´íÎó
+		case -1: //å‘ç”Ÿé”™è¯¯
 			perror("select error:");
 			break;
-		case 0: //³¬Ê±
+		case 0: //è¶…æ—¶
 			printf("select timeout\n");
 			break;
 		default:
 			if (FD_ISSET(sock, &readfd))
 			{
-				count = recvfrom(sock, playload, len, 0,(struct sockaddr*)&from_addr, &from_len); //½ÓÊÕ¿Í»§¶Ë·¢ËÍµÄÊı¾İ
+				count = recvfrom(sock, playload, len, 0,(struct sockaddr*)&from_addr, &from_len); //æ¥æ”¶å®¢æˆ·ç«¯å‘é€çš„æ•°æ®
 				if(count>0)
 					printf("Client Recv Broadcast\n\tPort: %d\n",ntohs(from_addr.sin_port));
 			}
