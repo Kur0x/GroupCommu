@@ -26,7 +26,7 @@ string member::JoinGroupMsg(ZZ psk) {
     string result =
             Cryptography::numberToString(y, false) + ' ' +
             Cryptography::numberToString(para->a, false) + ' ' +
-            Cryptography::numberToString(p.c, false) + ' ' +
+            Cryptography::numberToString(p.c, true) + ' ' +
             Cryptography::numberToString(p.s[0], false);
     // TODO network
     // send(y, z, m, result);

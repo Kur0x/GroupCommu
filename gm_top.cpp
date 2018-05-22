@@ -50,12 +50,12 @@ void onRecv_gm(ClientData *data) {
             head.proto_type = PROTO_PUB_PARA;
             string str;
 
-            str += Cryptography::numberToString(p.a) + " ";
-            str += Cryptography::numberToString(p.b) + " ";
-            str += Cryptography::numberToString(p.epsilon) + " ";
-            str += Cryptography::numberToString(p.G) + " ";
-            str += Cryptography::numberToString(p.g) + " ";
-            str += Cryptography::numberToString(p.n) + " ";
+            str += Cryptography::numberToString(p.a, false) + " ";
+            str += Cryptography::numberToString(p.b, false) + " ";
+            str += Cryptography::numberToString(p.epsilon, false) + " ";
+            str += Cryptography::numberToString(p.G, false) + " ";
+            str += Cryptography::numberToString(p.g, false) + " ";
+            str += Cryptography::numberToString(p.n, false) + " ";
             str += to_string(p.lambda);
             head.len = str.size();
 

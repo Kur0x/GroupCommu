@@ -4,11 +4,11 @@
 ZZ Cryptography::stringToNumber(string str, bool bin) {
     // 二进制模式。可以把字母转换成数字
     if (bin) {
-        ZZ number = conv<ZZ>(str[0]);
+        ZZ number = conv<ZZ>((unsigned char)str[0]);
         long len = str.length();
         for (long i = 1; i < len; i++) {
             number *= 128;
-            number += conv<ZZ>(str[i]);
+            number += conv<ZZ>((unsigned char)str[i]);
         }
         return number;
     }

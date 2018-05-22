@@ -4,7 +4,7 @@
 
 #include "TCPClient.h"
 
-auto Log = get("console");
+
 
 TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
 
@@ -50,6 +50,7 @@ void TCPClient::ConnectServer() {
 }
 
 void TCPClient::tcp_block() {
+    auto Log = get("console");
     int n;
     while (true) {
         if (cli_data->stat == ClientData::TO_SEND) {

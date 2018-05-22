@@ -1,4 +1,5 @@
-﻿#include "GM.h"
+﻿#include <sstream>
+#include "GM.h"
 
 using namespace group_sig;
 
