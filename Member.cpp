@@ -158,7 +158,7 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(PowerMod(g, r, para->n), false);
 
-    char input[INT_MAX];
+    char input[4096];
     strcpy(input, concatStr.c_str());
     unsigned char sha512Code[64];
 
@@ -197,7 +197,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) cons
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
-    char input[INT_MAX];
+    char input[4096];
     strcpy(input, concatStr.c_str());
     unsigned char sha512Code[64];
 
@@ -242,7 +242,7 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) con
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
-    char input[INT_MAX];
+    char input[4096];
     strcpy(input, concatStr.c_str());
     unsigned char sha512Code[64];
 
@@ -277,7 +277,7 @@ bool member::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) co
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(PowerMod(g, p.s[0], para->n) * PowerMod(y, p.c, para->n), false);
 
-    char input[INT_MAX];
+    char input[4096];
     strcpy(input, concatStr.c_str());
     unsigned char sha512Code[64];
 
@@ -308,7 +308,7 @@ bool member::SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, con
         concatStr += Cryptography::numberToString(t, false);
     }
 
-    char input[INT_MAX];
+    char input[4096];
     strcpy(input, concatStr.c_str());
     unsigned char sha512Code[64];
 
@@ -338,7 +338,7 @@ bool member::SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, co
         concatStr += Cryptography::numberToString(t, false);
     }
 
-    char input[INT_MAX];
+    char input[4096];
     strcpy(input, concatStr.c_str());
     unsigned char sha512Code[64];
 

@@ -7,11 +7,7 @@
 
 
 namespace group_sig {
-    typedef struct {
-        ZZ c;
-        std::vector<ZZ> s;
-        int cnt;
-    } cspair;
+
 
     class member {
     public:

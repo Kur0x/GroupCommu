@@ -1,6 +1,8 @@
 #pragma once
+
 #include <NTL/ZZ.h>
 #include "spdlog/spdlog.h"
+
 using namespace NTL;
 using namespace spdlog;
 //PROTOCOL
@@ -23,6 +25,30 @@ inline std::string get_str(char *src) {
     return std::string(src + HEADLEN);
 }
 
+struct cspair {
+    ZZ c;
+    std::vector<ZZ> s;
+    int cnt;
+
+    cspair() { cnt = 0; }
+
+    cspair(const cspair &p) {
+        c = p.c;
+        for (auto i:p.s) {
+            s.push_back(i);
+        }
+        cnt = s.size();
+    }
+
+    cspair &operator=(const cspair &p) {
+        c = p.c;
+        for (auto i:p.s) {
+            s.push_back(i);
+        }
+        cnt = s.size();
+    }
+};
+
 class ClientData {
     // TODO recv_playload struct
 public:
@@ -41,19 +67,17 @@ public:
 };
 
 
-namespace group_sig
-{
-	/**
-	 * \brief 公开参数 (n, b, G, g, a, λ, ε)
-	 */
-	struct public_para
-	{
-		ZZ n;
-		ZZ b;
-		ZZ G;
-		ZZ g;
-		ZZ a; // 系统安全性参数a
-		long lambda;
-		ZZ epsilon;
-	};
+namespace group_sig {
+    /**
+     * \brief 公开参数 (n, b, G, g, a, λ, ε)
+     */
+    struct public_para {
+        ZZ n;
+        ZZ b;
+        ZZ G;
+        ZZ g;
+        ZZ a; // 系统安全性参数a
+        long lambda;
+        ZZ epsilon;
+    };
 }

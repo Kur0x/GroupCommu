@@ -96,7 +96,7 @@ bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 		Cryptography::numberToString(g, false) +
 		Cryptography::numberToString(PowerMod(g, p.s[0], rsa_.getPK()->n) * PowerMod(y, p.c, rsa_.getPK()->n), false);
 
-	char input[INT_MAX];
+	char input[4096];
 	strcpy(input, concatStr.c_str());
 	unsigned char sha512Code[64];
 
