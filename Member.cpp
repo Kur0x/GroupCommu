@@ -173,7 +173,7 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
         result += sha512Code[i];
     }
 
-    p.c = Cryptography::stringToNumber(result, false);
+    p.c = Cryptography::stringToNumber(result, true);
     p.s.resize(1);
     p.s[0] = SubMod(r, MulMod(p.c, this->x, para->n), para->n);
 //	p.s[0] = r - p.c * this->x;

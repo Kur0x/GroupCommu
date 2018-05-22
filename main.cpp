@@ -14,5 +14,6 @@ int main() {
     Log->info("Program started");
 
     main_gm("192.168.1.2", 9999);
+
     return 0;
 }

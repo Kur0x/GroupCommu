@@ -121,8 +121,12 @@ void TCPServer::StartServer() {
                     //TODO
                     if (client_fds[i].stat == ClientData::TO_RECV)//recv
                     {
-                        if (tcp_recv_server(client_fds[i].clientfd, client_fds[i].recv_playload,
-                                            ClientData::BUFFER_LEN) <= 0) {
+                        int ret = tcp_recv_server(client_fds[i].clientfd, client_fds[i].recv_playload,
+                                                  ClientData::BUFFER_LEN);
+                        if (ret == 0) {
+                            Log->info("A client disconnected!");
+                            bzero(&client_fds[i], sizeof(client_fds[i]));
+                        } else if (ret < 0) {
                             perror("recv");
                             exit(1);
                         }
@@ -130,10 +134,14 @@ void TCPServer::StartServer() {
                     }
                     if (client_fds[i].stat == ClientData::TO_SEND)//send
                     {
-                        if (tcp_send_server(client_fds[i].clientfd, client_fds[i].send_playload,
-                                            client_fds[i].send_len) <= 0) {
+                        int ret = tcp_send_server(client_fds[i].clientfd, client_fds[i].send_playload,
+                                                  client_fds[i].send_len);
+                        if (ret < 0) {
                             perror("send");
                             exit(1);
+                        } else if (ret == 0) {
+                            Log->info("A client disconnected!");
+                            bzero(&client_fds[i], sizeof(client_fds[i]));
                         }
 
                     }

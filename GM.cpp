@@ -65,7 +65,7 @@ ZZ GM::verify(string id, string msg)
 	stream >> token;
 	ZZ aa = Cryptography::stringToNumber(token, false);
 	stream >> token;
-	p.c = Cryptography::stringToNumber(token, false);
+	p.c = Cryptography::stringToNumber(token, true);
 	stream >> token;
 	p.s.push_back(Cryptography::stringToNumber(token, false));
 	if(!SKLOGver(psk, yy, aa, p)) {
@@ -112,11 +112,8 @@ bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 		result += sha512Code[i];
 	}
 
-	ZZ cc = Cryptography::stringToNumber(result, false);
-	if (cc == p.c) {
-		return true;
-	}
-	return false;
+	ZZ cc = Cryptography::stringToNumber(result, true);
+	return cc == p.c != 0;
 }
 
 
