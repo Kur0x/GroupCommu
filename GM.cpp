@@ -65,7 +65,7 @@ ZZ GM::verify(string id, string msg)
 	stream >> token;
 	ZZ aa = Cryptography::stringToNumber(token, false);
 	stream >> token;
-	p.c = Cryptography::stringToNumber(token, true);
+	p.c = Cryptography::stringToNumber(token, false);
 	stream >> token;
 	p.s.push_back(Cryptography::stringToNumber(token, false));
 	if(!SKLOGver(psk, yy, aa, p)) {
@@ -97,22 +97,10 @@ bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 		Cryptography::numberToString(g, false) +
 		Cryptography::numberToString(PowerMod(g, p.s[0], rsa_.getPK()->n) * PowerMod(y, p.c, rsa_.getPK()->n), false);
 
-	char input[4096];
-	strcpy(input, concatStr.c_str());
-	unsigned char sha512Code[64];
+	hash<string> h;
+	size_t n = h(concatStr);
 
-	SHA512_CB sha512;
-
-	SHA512Init(&sha512);
-	SHA512Update(&sha512, (unsigned char*)input, strlen((char *)input));
-	SHA512Final(&sha512, sha512Code);
-
-	string result;
-	for (int i = 0; i < 64; i++) {
-		result += sha512Code[i];
-	}
-
-	ZZ cc = Cryptography::stringToNumber(result, true);
+	ZZ cc = conv<ZZ>(n);
 	return cc == p.c != 0;
 }
 
