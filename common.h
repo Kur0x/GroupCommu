@@ -2,6 +2,7 @@
 
 #include <NTL/ZZ.h>
 #include "spdlog/spdlog.h"
+#include <functional>
 
 using namespace NTL;
 using namespace spdlog;

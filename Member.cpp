@@ -1,5 +1,4 @@
 ﻿#include "Member.h"
-
 #include <MMX/Cryptography.h>
 
 using namespace group_sig;
@@ -26,7 +25,7 @@ string member::JoinGroupMsg(ZZ psk) {
     string result =
             Cryptography::numberToString(y, false) + ' ' +
             Cryptography::numberToString(para->a, false) + ' ' +
-            Cryptography::numberToString(p.c, true) + ' ' +
+            Cryptography::numberToString(p.c, false) + ' ' +
             Cryptography::numberToString(p.s[0], false);
     // TODO network
     // send(y, z, m, result);
@@ -158,22 +157,10 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(PowerMod(g, r, para->n), false);
 
-    char input[4096];
-    strcpy(input, concatStr.c_str());
-    unsigned char sha512Code[64];
+    hash<string> h;
+    size_t n = h(concatStr);
 
-    SHA512_CB sha512;
-
-    SHA512Init(&sha512);
-    SHA512Update(&sha512, (unsigned char *) input, strlen((char *) input));
-    SHA512Final(&sha512, sha512Code);
-
-    string result;
-    for (int i = 0; i < 64; i++) {
-        result += sha512Code[i];
-    }
-
-    p.c = Cryptography::stringToNumber(result, true);
+    p.c = conv<ZZ>(n);
     p.s.resize(1);
     p.s[0] = SubMod(r, MulMod(p.c, this->x, para->n), para->n);
 //	p.s[0] = r - p.c * this->x;
@@ -197,22 +184,10 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) cons
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
-    char input[4096];
-    strcpy(input, concatStr.c_str());
-    unsigned char sha512Code[64];
+    hash<string> h;
+    size_t n = h(concatStr);
 
-    SHA512_CB sha512;
-
-    SHA512Init(&sha512);
-    SHA512Update(&sha512, (unsigned char *) input, strlen((char *) input));
-    SHA512Final(&sha512, sha512Code);
-
-    string result;
-    for (int i = 0; i < 64; i++) {
-        result += sha512Code[i];
-    }
-
-    p.c = Cryptography::stringToNumber(result, false);
+    p.c = conv<ZZ>(n);
     p.s.resize(l);
     p.cnt = l;
     for (int i = 0; i < l; i++) {
@@ -242,22 +217,10 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) con
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
-    char input[4096];
-    strcpy(input, concatStr.c_str());
-    unsigned char sha512Code[64];
+    hash<string> h;
+    size_t n = h(concatStr);
 
-    SHA512_CB sha512;
-
-    SHA512Init(&sha512);
-    SHA512Update(&sha512, (unsigned char *) input, strlen((char *) input));
-    SHA512Final(&sha512, sha512Code);
-
-    string result;
-    for (int i = 0; i < 64; i++) {
-        result += sha512Code[i];
-    }
-
-    p.c = Cryptography::stringToNumber(result, false);
+    p.c = conv<ZZ>(n);
     p.s.resize(l);
     p.cnt = l;
     for (int i = 0; i < l; i++) {
@@ -277,22 +240,10 @@ bool member::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) co
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(PowerMod(g, p.s[0], para->n) * PowerMod(y, p.c, para->n), false);
 
-    char input[4096];
-    strcpy(input, concatStr.c_str());
-    unsigned char sha512Code[64];
+    hash<string> h;
+    size_t n = h(concatStr);
 
-    SHA512_CB sha512;
-
-    SHA512Init(&sha512);
-    SHA512Update(&sha512, (unsigned char *) input, strlen((char *) input));
-    SHA512Final(&sha512, sha512Code);
-
-    string result;
-    for (int i = 0; i < 64; i++) {
-        result += sha512Code[i];
-    }
-
-    ZZ cc = Cryptography::stringToNumber(result, false);
+    ZZ cc = conv<ZZ>(n);
     if (cc == p.c) {
         return true;
     }
@@ -308,21 +259,10 @@ bool member::SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, con
         concatStr += Cryptography::numberToString(t, false);
     }
 
-    char input[4096];
-    strcpy(input, concatStr.c_str());
-    unsigned char sha512Code[64];
+    hash<string> h;
+    size_t n = h(concatStr);
 
-    SHA512_CB sha512;
-
-    SHA512Init(&sha512);
-    SHA512Update(&sha512, (unsigned char *) input, strlen((char *) input));
-    SHA512Final(&sha512, sha512Code);
-
-    string result;
-    for (int i = 0; i < 64; i++) {
-        result += sha512Code[i];
-    }
-    ZZ cc = Cryptography::stringToNumber(result, false);
+    ZZ cc = conv<ZZ>(n);
     if (cc == p.c) {
         return true;
     }
@@ -338,21 +278,10 @@ bool member::SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, co
         concatStr += Cryptography::numberToString(t, false);
     }
 
-    char input[4096];
-    strcpy(input, concatStr.c_str());
-    unsigned char sha512Code[64];
+    hash<string> h;
+    size_t n = h(concatStr);
 
-    SHA512_CB sha512;
-
-    SHA512Init(&sha512);
-    SHA512Update(&sha512, (unsigned char *) input, strlen((char *) input));
-    SHA512Final(&sha512, sha512Code);
-
-    string result;
-    for (int i = 0; i < 64; i++) {
-        result += sha512Code[i];
-    }
-    ZZ cc = Cryptography::stringToNumber(result, false);
+    ZZ cc = conv<ZZ>(n);
     if (cc == p.c) {
         return true;
     }
