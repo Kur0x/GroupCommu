@@ -9,8 +9,8 @@ void int2str(const int &i, string &str) {
     str = stream.str();
 }
 
-member::member(string id, public_para *para)
-        : id(id) {
+member::member(string id, public_para *para, ZZ psk)
+        : id(id), psk(psk) {
     this->para = para;
     RandomBits(x, para->lambda);
     y = PowerMod(para->a, x, para->n);

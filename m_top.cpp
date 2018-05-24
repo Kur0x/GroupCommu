@@ -11,8 +11,9 @@ using namespace std;
 TCPClient *client;
 group_sig::member *m;
 
-string id;//id，由命令行输入
-ZZ psk;
+string m_id;//id，由命令行输入
+ZZ m_psk;//id，由命令行输入
+
 
 void send_req(u_int8_t type, string msg = "") {
     auto Log = get("console");
@@ -63,10 +64,10 @@ void onRecv_m(ClientData *data) {
             stream >> l;
             para->lambda = l;
 
-            m = new group_sig::member(id, para);
+            m = new group_sig::member(m_id, para, m_psk);
 
             //send PROTO_JOIN_GROUP
-            send_req(PROTO_JOIN_GROUP, m->JoinGroupMsg(psk));
+            send_req(PROTO_JOIN_GROUP, m->JoinGroupMsg(m_psk));
             break;
         }
         case PROTO_JOIN_GROUP: {
@@ -98,7 +99,7 @@ void onRecv_m(ClientData *data) {
 void onConnected(ClientData */*data*/) {
     auto Log = get("console");
     Log->info("Client requesting public para msg...");
-    send_req(PROTO_PUB_PARA, id);
+    send_req(PROTO_PUB_PARA, m_id);
 }
 
 void onFin(ClientData */*data*/) {
@@ -107,7 +108,9 @@ void onFin(ClientData */*data*/) {
     exit(0);
 }
 
-int main_m(string ip, u_int16_t port) {
+int main_m(string ip, u_int16_t port, string id, ZZ psk) {
+    m_id = id;
+    m_psk = psk;
     auto Log = get("console");
     Log->info("starting member at " + ip);
     client = new TCPClient(inet_addr(ip.c_str()), port);

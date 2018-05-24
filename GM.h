@@ -16,8 +16,8 @@ namespace group_sig
 	class GM
 	{
 	public:
-		explicit GM(long lambda)
-			: lambda(lambda)
+		explicit GM(long lambda, ZZ psk)
+				: lambda(lambda), psk(psk)
 		{
 			rsa_.generateKeyPair();
 			init();

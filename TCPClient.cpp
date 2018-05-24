@@ -39,8 +39,12 @@ void TCPClient::ConnectServer() {
         exit(-1);
     }
     //    log->debug("start connection");
-    connect(cli_data->serverfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-    Log->info("Connected to Server");
+    int n = connect(cli_data->serverfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+    if (n < 0) {
+        Log->critical("Connect error!");
+        exit(-1);
+    }
+    Log->info("Connected to Serve");
 
     if (onConnectedCallBack != nullptr) {
         onConnectedCallBack(cli_data);

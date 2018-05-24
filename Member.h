@@ -11,7 +11,7 @@ namespace group_sig {
 
     class member {
     public:
-        member(std::string id, public_para *para);
+        member(std::string id, public_para *para, ZZ psk);
 
         std::string JoinGroupMsg(ZZ psk);
 
@@ -49,7 +49,7 @@ namespace group_sig {
         public_para *para;
 
         ZZ groupKey;
-
+        ZZ psk;
 
     };
 
