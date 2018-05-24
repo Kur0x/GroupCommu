@@ -41,6 +41,7 @@ namespace group_sig {
         void onGroupKeyBoardcastRecv(std::string msg);
 
     private:
+        std::shared_ptr<logger> Log;
         const std::string id;
         ZZ x;
         ZZ y;

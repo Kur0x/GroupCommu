@@ -47,6 +47,7 @@ struct cspair {
             s.push_back(i);
         }
         cnt = s.size();
+        return *this;
     }
 };
 

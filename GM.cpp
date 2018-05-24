@@ -18,7 +18,7 @@ using namespace group_sig;
  */
 void GM::init()
 {
-
+	Log = get("console");
 //	_ an RSA public key _n;e_,
 //			_ a cyclic group G = hgi of order n in which computing discrete logarithms is
 //	infeasible _e.g. G could be a subgroup of Z _ , for a prime p with nj_p , 1__,
@@ -95,13 +95,15 @@ string GM::open(ZZ gg, ZZ zz)
 bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 {
 	string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
-		Cryptography::numberToString(g, false) +
-		Cryptography::numberToString(MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n), false);
+					   Cryptography::numberToString(g, false) +
+					   Cryptography::numberToString(MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n), false);
 
 	hash<string> h;
 	size_t n = h(concatStr);
 
 	ZZ cc = conv<ZZ>(n);
+	Log->debug("cc:{}", Cryptography::numberToString(cc, false));
+	Log->debug("p.c:{}", Cryptography::numberToString(p.c, false));
 	return cc == p.c != 0;
 }
 

@@ -12,6 +12,7 @@ void int2str(const int &i, string &str) {
 member::member(string id, public_para *para, ZZ psk)
         : id(id), psk(psk) {
     this->para = para;
+    Log = get("console");
     RandomBits(x, para->lambda);
     y = PowerMod(para->a, x, para->n);
     z = PowerMod(para->g, y, para->n);
@@ -27,13 +28,12 @@ string member::JoinGroupMsg(ZZ psk) {
             Cryptography::numberToString(para->a, false) + ' ' +
             Cryptography::numberToString(p.c, false) + ' ' +
             Cryptography::numberToString(p.s[0], false);
-    // TODO network
-    // send(y, z, m, result);
+
     stringstream ss;
-    ss << Cryptography::numberToString(y) << ' '
-       << Cryptography::numberToString(z) << ' '
+    ss << y << ' '
+       << z << ' '
        << result;
-//    ss << y << " " << z << " " << result;
+
     get("console")->info(ss.str());
     return ss.str();
 }
