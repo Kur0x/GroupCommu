@@ -30,7 +30,11 @@ string member::JoinGroupMsg(ZZ psk) {
     // TODO network
     // send(y, z, m, result);
     stringstream ss;
-    ss << y << " " << z << " " << result;
+    ss << Cryptography::numberToString(y) << ' '
+       << Cryptography::numberToString(z) << ' '
+       << result;
+//    ss << y << " " << z << " " << result;
+    get("console")->info(ss.str());
     return ss.str();
 }
 
@@ -44,7 +48,7 @@ string member::sig(const ZZ &x) const {
     ZZ gg = PowerMod(para->g, r, para->n);
     ZZ zz = PowerMod(gg, y, para->n);
     cspair v1 = SKLOGLOG(x, zz, gg, para->a);
-    cspair v2 = SKROOTLOG(x, zz * gg, gg, para->b);
+    cspair v2 = SKROOTLOG(x, MulMod(zz, gg, para->n), gg, para->b);
     string result = Cryptography::numberToString(gg, false) + ' ' +
                     Cryptography::numberToString(zz, false) + ' ' +
                     Cryptography::numberToString(v1.c, false);
