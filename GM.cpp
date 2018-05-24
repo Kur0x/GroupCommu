@@ -100,13 +100,14 @@ bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 	string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
 					   Cryptography::numberToString(g, false) +
 					   Cryptography::numberToString(temp, false);
-
+	Log->debug("SKLOGver\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
+			   Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 	hash<string> h;
 	size_t n = h(concatStr);
 
 	ZZ cc = conv<ZZ>(n);
-	Log->debug("cc:{}", Cryptography::numberToString(cc, false));
-	Log->debug("p.c:{}", Cryptography::numberToString(p.c, false));
+	Log->debug("cc: {}", Cryptography::numberToString(cc, false));
+	Log->debug("p.c: {}", Cryptography::numberToString(p.c, false));
 	return cc == p.c != 0;
 }
 

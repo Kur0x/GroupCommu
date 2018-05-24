@@ -160,7 +160,10 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(PowerMod(g, r, para->n), false);
+    //TODO not para->n, rather, it should be para->G - 1
     Log->debug("g^r: {}", Cryptography::numberToString(PowerMod(g, r, para->n), false));
+    Log->debug("SKLOGver\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
+               Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 
     hash<string> h;
     size_t n = h(concatStr);
