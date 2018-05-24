@@ -94,9 +94,12 @@ string GM::open(ZZ gg, ZZ zz)
 
 bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 {
+    ZZ temp = MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n);
+    Log->debug("g^r: {}", Cryptography::numberToString(temp, false));
+    
 	string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
 					   Cryptography::numberToString(g, false) +
-					   Cryptography::numberToString(MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n), false);
+					   Cryptography::numberToString(temp, false);
 
 	hash<string> h;
 	size_t n = h(concatStr);
