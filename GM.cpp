@@ -49,18 +49,19 @@ ZZ GM::verify(string id, string msg)
 {
 	cspair p;
 	stringstream stream(msg);
+	get("console")->info(msg.c_str());
 	string token;
 	stream >> token;
 	ZZ y = Cryptography::stringToNumber(token, false);
 	stream >> token;
 	ZZ z = Cryptography::stringToNumber(token, false);
-	stream >> token;
 	// JoinGroupMsg y和z的合法性
 	if (z != PowerMod(g, y, rsa_.getPK()->n)) {
 		throw "y,z inconsistent";
 	}
 
 	//验证Alice知道x
+    stream >> token;
 	ZZ yy = Cryptography::stringToNumber(token, false);
 	stream >> token;
 	ZZ aa = Cryptography::stringToNumber(token, false);
@@ -95,7 +96,7 @@ bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 {
 	string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
 		Cryptography::numberToString(g, false) +
-		Cryptography::numberToString(PowerMod(g, p.s[0], rsa_.getPK()->n) * PowerMod(y, p.c, rsa_.getPK()->n), false);
+		Cryptography::numberToString(MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n), false);
 
 	hash<string> h;
 	size_t n = h(concatStr);
