@@ -23,11 +23,11 @@ void send_r(string id, u_int8_t type, string msg = "") {
         head.len = 0;
         server->SendPacket(id, (char *) &head, HEADLEN);
     } else {
-        head.len = msg.size();
-        char *buffer = new char[HEADLEN + msg.size()];
+        head.len = msg.size() + 1;
+        char *buffer = new char[HEADLEN + msg.size() + 1];
         memcpy(buffer, &head, HEADLEN);
-        memcpy(buffer + HEADLEN, msg.c_str(), msg.size());
-        server->SendPacket(id, buffer, HEADLEN + msg.size());
+        memcpy(buffer + HEADLEN, msg.c_str(), msg.size() + 1);
+        server->SendPacket(id, buffer, HEADLEN + msg.size() + 1);
     }
 }
 

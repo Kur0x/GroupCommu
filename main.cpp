@@ -14,7 +14,7 @@ int main() {
     set_level(level::debug);
     Log->info("Program started");
 
-    main_gm("192.168.1.2", 9999, conv<ZZ>(233333));
-//    main_m("192.168.1.2", 9999, "Alice", conv<ZZ>(233333));
+//    main_gm("192.168.1.2", 9999, conv<ZZ>(233333));
+    main_m("192.168.1.2", 9999, "Alice", conv<ZZ>(233333));
     return 0;
 }
