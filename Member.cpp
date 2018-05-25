@@ -71,6 +71,7 @@ string member::sig(const ZZ &x) const {
         result += Cryptography::numberToString(v2.s[i], false);
     }
 
+    Log->debug("msg after signing: {}", result);
     return result;
 }
 
@@ -162,7 +163,7 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
                        Cryptography::numberToString(PowerMod(g, r, para->n), false);
     //TODO not para->n, rather, it should be para->G - 1
     Log->debug("g^r: {}", Cryptography::numberToString(PowerMod(g, r, para->n), false));
-    Log->debug("SKLOGver\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
+    Log->debug("SKLOG\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
                Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 
 

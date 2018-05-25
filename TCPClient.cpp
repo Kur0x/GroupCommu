@@ -58,7 +58,7 @@ void TCPClient::tcp_block() {
     int n;
     while (true) {
         if (cli_data->stat == ClientData::TO_SEND) {
-            Log->info("sending msg to server");
+//            Log->info("sending msg to server");
             n = tcp_send_server(cli_data->serverfd, cli_data->send_playload, cli_data->send_len);
             if (n < 0) {
                 get("console")->critical("ERROR send");
@@ -78,7 +78,7 @@ void TCPClient::tcp_block() {
             exit(0);
         }
 
-        Log->info("Received msg from server");
+//        Log->info("Received msg from server");
         if (onRecvCallBack != nullptr) {
             onRecvCallBack(cli_data);
         }

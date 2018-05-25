@@ -17,7 +17,7 @@ ZZ m_psk;//id，由命令行输入
 
 void send_req(u_int8_t type, string msg = "") {
     auto Log = get("console");
-    Log->info("Client sending request...");
+    Log->info("Client sending request of type {0:x}...", type);
     header_t head;
     head.proto_ori = PROTO_C2S;
     head.proto_type = type;
@@ -72,7 +72,7 @@ void onRecv_m(ClientData *data) {
         }
         case PROTO_JOIN_GROUP: {
             auto Log = get("console");
-            Log->info("Client recv join group msg");
+            Log->info("Client recv join group msg v");
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
             break;

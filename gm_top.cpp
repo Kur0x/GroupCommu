@@ -15,7 +15,7 @@ string hardware_id;//id，由命令行输入
 
 void send_r(string id, u_int8_t type, string msg = "") {
     auto Log = get("console");
-    Log->info("GM sending response...");
+    Log->info("GM sending response of type {0:x}...", type);
     header_t head;
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
