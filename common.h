@@ -3,7 +3,7 @@
 #include <NTL/ZZ.h>
 #include "spdlog/spdlog.h"
 #include <functional>
-
+#include "murmur3.h"
 using namespace NTL;
 using namespace spdlog;
 //PROTOCOL

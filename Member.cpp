@@ -165,7 +165,7 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     Log->debug("SKLOGver\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
                Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 
-    hash<string> h;
+
     size_t n = h(concatStr);
 
     p.c = conv<ZZ>(n);
@@ -192,7 +192,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) cons
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
-    hash<string> h;
+
     size_t n = h(concatStr);
 
     p.c = conv<ZZ>(n);
@@ -225,7 +225,7 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) con
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
-    hash<string> h;
+
     size_t n = h(concatStr);
 
     p.c = conv<ZZ>(n);
@@ -248,7 +248,7 @@ bool member::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) co
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(PowerMod(g, p.s[0], para->n) * PowerMod(y, p.c, para->n), false);
 
-    hash<string> h;
+
     size_t n = h(concatStr);
 
     ZZ cc = conv<ZZ>(n);
@@ -267,7 +267,7 @@ bool member::SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, con
         concatStr += Cryptography::numberToString(t, false);
     }
 
-    hash<string> h;
+
     size_t n = h(concatStr);
 
     ZZ cc = conv<ZZ>(n);
@@ -286,7 +286,7 @@ bool member::SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, co
         concatStr += Cryptography::numberToString(t, false);
     }
 
-    hash<string> h;
+
     size_t n = h(concatStr);
 
     ZZ cc = conv<ZZ>(n);
