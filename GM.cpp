@@ -49,7 +49,6 @@ ZZ GM::verify(string id, string msg)
 {
 	cspair p;
 	stringstream stream(msg);
-	get("console")->info(msg.c_str());
 	string token;
 	stream >> token;
 	ZZ y = Cryptography::stringToNumber(token, false);
@@ -95,6 +94,7 @@ string GM::open(ZZ gg, ZZ zz)
 bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 {
     ZZ temp = MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n);
+    Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false), Cryptography::numberToString(p.s[0], false));
     Log->debug("g^r: {}", Cryptography::numberToString(temp, false));
     
 	string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +

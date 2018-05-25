@@ -136,6 +136,7 @@ void TCPServer::StartServer() {
                     {
                         int ret = tcp_send_server(client_fds[i].clientfd, client_fds[i].send_playload,
                                                   client_fds[i].send_len);
+                        client_fds[i].send_len = 0;
                         if (ret < 0) {
                             perror("send");
                             exit(1);
