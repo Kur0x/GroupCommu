@@ -27,14 +27,14 @@ string member::JoinGroupMsg(ZZ psk) {
             Cryptography::numberToString(y, false) + ' ' +
             Cryptography::numberToString(para->a, false) + ' ' +
             Cryptography::numberToString(p.c, false) + ' ' +
-            Cryptography::numberToString(p.s[0], false) ;
+            Cryptography::numberToString(p.s[0], false);
 
     stringstream ss;
     ss << y << ' '
        << z << ' '
        << result;
 
-    Log->debug("msg: {}", ss.str());
+    get("console")->info(ss.str());
     return ss.str();
 }
 
@@ -173,7 +173,6 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     p.s[0] = SubMod(r, MulMod(p.c, this->x, para->n), para->n);
 //	p.s[0] = r - p.c * this->x;
     p.cnt = 1;
-    Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false),Cryptography::numberToString(p.s[0], false));
     return p;
 }
 
