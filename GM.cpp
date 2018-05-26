@@ -30,7 +30,13 @@ void GM::init()
 //	_these parameters are required for the SKLOGLOG signatures_
 	G = Cryptography::findPrime(512);
 	g = Cryptography::findPrimitiveRoot(G);
-
+    n = rsa_n = G - 1;// 群的阶和rsa的n
+    while (true) {
+        rsa_b = RandomBits_ZZ(NumBits(n));
+        if (rsa_b > 1 && rsa_b < n && GCD(rsa_b, n) == 1)
+            break;
+    }
+    rsa_a = InvMod(rsa_b, G);
 	a = RandomBnd(G - 2) + 1;//[1,p-1]
 	lambda = 512;
 	epsilon = 5;
@@ -39,9 +45,9 @@ void GM::init()
 public_para GM::getPublicPara() const
 {
 	return {
-		rsa_.getPK()->n,
-		rsa_.getPK()->b,
-		G, g, a, lambda, epsilon
+            rsa_n,
+            rsa_b,
+            G, g, a, lambda, epsilon
 	};
 }
 
@@ -55,8 +61,8 @@ ZZ GM::verify(string id, string msg)
 	stream >> token;
 	ZZ z = Cryptography::stringToNumber(token, false);
 	// JoinGroupMsg y和z的合法性
-	if (z != PowerMod(g, y, rsa_.getPK()->n)) {
-		throw "y,z inconsistent";
+    if (z != PowerMod(g, y, rsa_n)) {
+        Log->critical("y,z inconsistent");
 	}
 
 	//验证Alice知道x
@@ -69,13 +75,13 @@ ZZ GM::verify(string id, string msg)
 	stream >> token;
 	p.s.push_back(Cryptography::stringToNumber(token, false));
 	if(!SKLOGver(psk, yy, aa, p)) {
-		throw "Alice doesn't know x\n";
+        Log->critical("Alice doesn't know x");
 	}
 	
 	// GM保存(y, z)用于日后打开群签名
 	info.push_back({id, y, z});
 	//  GM生成Alice的成员证书 v = (y + 1) ^ d (mod n)
-	ZZ v = PowerMod(y + 1, rsa_.getSK()->a, rsa_.getPK()->n);
+    ZZ v = PowerMod(y + 1, rsa_a, rsa_n);
 	return v;
 }
 
@@ -83,7 +89,7 @@ string GM::open(ZZ gg, ZZ zz)
 {
 	for (auto i : info)
 	{
-		if (PowerMod(gg, i.y, rsa_.getPK()->n) == zz)
+        if (PowerMod(gg, i.y, rsa_n) == zz)
 			return i.id;
 	}
 	string s;
@@ -93,7 +99,7 @@ string GM::open(ZZ gg, ZZ zz)
 
 bool GM::SKLOGver(const ZZ& m, const ZZ& y, const ZZ& g, const cspair& p) const
 {
-    ZZ temp = MulMod(PowerMod(g, p.s[0], rsa_.getPK()->n), PowerMod(y, p.c, rsa_.getPK()->n), rsa_.getPK()->n);
+    ZZ temp = MulMod(PowerMod(g, p.s[0], rsa_n), PowerMod(y, p.c, rsa_n), rsa_n);
     Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false), Cryptography::numberToString(p.s[0], false));
     Log->debug("g^r: {}", Cryptography::numberToString(temp, false));
     
@@ -136,7 +142,7 @@ void GM::onKeyExchangeResponseRecv(string msg)
 	keyChain = gn_buffer;
 
 	//set groupKey
-	groupKey = PowerMod(*keyChain.rbegin(), rsa_.getSK()->a, rsa_.getPK()->n);
+    groupKey = PowerMod(*keyChain.rbegin(), rsa_a, rsa_n);
 	
 
 }
@@ -148,7 +154,7 @@ string GM::getBroadcastMsg()
 	for (auto it = keyChain.begin(); it < keyChain.end() - 1 && it_i >= info.begin(); ++it, --it_i) {
 		broadcast_buf << it_i->id << ' ';
 		broadcast_buf << Cryptography::numberToString(
-			PowerMod(*it, rsa_.getSK()->a, rsa_.getPK()->n)) << ' ';
+                PowerMod(*it, rsa_a, rsa_n)) << ' ';
 	}
 	return broadcast_buf.str();
 }

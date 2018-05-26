@@ -93,7 +93,7 @@ void onRecv_gm(ClientData *data) {
 int main_gm(string ip, u_int16_t port, ZZ psk) {
     auto Log = get("console");
     Log->info("starting GM");
-    gm = new group_sig::GM(1234, psk);
+    gm = new group_sig::GM(512, psk);
     server = new TCPServer(inet_addr(ip.c_str()), port);
     server->setOnRecvCallBack(onRecv_gm);
     server->StartServer();

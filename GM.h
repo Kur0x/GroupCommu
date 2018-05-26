@@ -18,7 +18,7 @@ namespace group_sig
 		explicit GM(long lambda, ZZ psk)
 				: lambda(lambda), psk(psk)
 		{
-			rsa_.generateKeyPair();
+//			rsa_.generateKeyPair();
 			init();
 		}
 
@@ -32,10 +32,14 @@ namespace group_sig
 		string getBroadcastMsg();
 	private:
         shared_ptr<logger> Log;
-		RSA::RsaSignature rsa_; // (n b)
+//		RSA::RsaSignature rsa_; // (n rsa_b)
 		ZZ G;
         ZZ g; // 循环群G，g为生成元，G的阶是G-1
 		ZZ a;
+        ZZ n;
+        ZZ rsa_n;
+        ZZ rsa_b;
+        ZZ rsa_a;
 		long lambda; //群成员私钥长度
 		ZZ epsilon;
 		vector<member_info> info;
