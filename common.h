@@ -83,3 +83,14 @@ namespace group_sig {
         ZZ epsilon;
     };
 }
+
+ZZ findRandomInZn(const ZZ &n){
+
+    ZZ result;
+    while (true) {
+        result = RandomBits_ZZ(NumBits(n));
+        if (result > 1 && result < n && GCD(result, n) == 1)
+            break;
+    }
+    return result;
+}

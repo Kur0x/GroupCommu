@@ -156,24 +156,42 @@ void member::onGroupKeyBoardcastRecv(string msg) {
 
 cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
 //	unsigned long r = RandomWord();
-    ZZ r = RandomBnd(para->n - 1) + 1;
+    ZZ r;
     cspair p;
-    string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
-                       Cryptography::numberToString(g, false) +
-                       Cryptography::numberToString(PowerMod(g, r, para->n), false);
+    string concatStr;
+    size_t n;
+
+
+    fucked:
+    r = findRandomInZn(para->n);
+    Log->debug("r: {}", Cryptography::numberToString(r, false));
+    concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
+                Cryptography::numberToString(g, false) +
+                Cryptography::numberToString(PowerMod(g, r, para->n), false);
     //TODO not para->n, rather, it should be para->G - 1
     Log->debug("g^r: {}", Cryptography::numberToString(PowerMod(g, r, para->n), false));
     Log->debug("SKLOG\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
                Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 
 
-    size_t n = h(concatStr);
+    n = h(concatStr);
 
+
+    //TODO seems that n may be smaller than c*x, so s may become negative, which is illegal
     p.c = conv<ZZ>(n);
     p.s.resize(1);
-    p.s[0] = SubMod(r, MulMod(p.c, this->x, para->n), para->n);
+    p.s[0] = r - p.c * x;
+    if (p.s[0] < 0) {
+        Log->debug("fucked");
+        goto fucked;
+    }
 //	p.s[0] = r - p.c * this->x;
     p.cnt = 1;
+    Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false), Cryptography::numberToString(p.s[0], false));
+    ZZ temp = MulMod(PowerMod(g, p.s[0], para->n), PowerMod(y, p.c, para->n), para->n);
+    Log->debug("c*x: {}", Cryptography::numberToString(p.c*this->x), false));
+    Log->debug("g^r 2: {}", Cryptography::numberToString(temp, false));
+
     return p;
 }
 

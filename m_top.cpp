@@ -4,7 +4,7 @@
 #include <sstream>
 #include "TCPClient.h"
 #include "Member.h"
-
+#include "NetworkUtility.h"
 using namespace std;
 
 
@@ -34,13 +34,15 @@ void send_req(u_int8_t type, string msg = "") {
 }
 
 void onRecv_m(ClientData *data) {
+    auto Log = get("console");
     header_t *header;
     header = (header_t *) (data->recv_playload);
-
+    stringstream ss;
+    NetworkUtility::print_payload(ss,(const u_char*)data->recv_playload,data->recv_len);
+    Log->debug("recv raw packet:\n{}",ss.str());
     string msg;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
-            auto Log = get("console");
             Log->info("Client recv public para msg");
 //		group_sig::public_para* p=new group_sig::public_para;
             char *p = new char[header->len + 1];
@@ -71,21 +73,18 @@ void onRecv_m(ClientData *data) {
             break;
         }
         case PROTO_JOIN_GROUP: {
-            auto Log = get("console");
             Log->info("Client recv join group msg v");
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
             break;
         }
         case PROTO_KEY_EX: {
-            auto Log = get("console");
             Log->info("Client recv key exchg msg");
             msg = get_str(data->recv_playload);
             m->onKeyExchangeRequestRecv(msg);
             break;
         }
         case PROTO_KEY_BROADCAST: {
-            auto Log = get("console");
             Log->info("Client recv broadcast msg");
             msg = get_str(data->recv_playload);
             m->onGroupKeyBoardcastRecv(msg);
