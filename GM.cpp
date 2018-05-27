@@ -112,14 +112,12 @@ bool GM::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const 
 }
 
 
-void GM::keyExchangeRequest(string id)//初始msg为空
-{
+string GM::getKeyChain() {
     stringstream msg;
     for (auto it:keyChain) {
         msg << Cryptography::numberToString(it) << " ";
     }
-    // TODO Network
-    //sendRequest(id, msg);//id是接收方
+    return msg.str();
 }
 
 void GM::onKeyExchangeResponseRecv(string msg) {

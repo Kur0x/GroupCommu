@@ -66,6 +66,7 @@ public:
     size_t send_len;
     char *recv_playload;
     char *send_playload;
+    bool half;
 };
 
 

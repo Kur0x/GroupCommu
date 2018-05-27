@@ -1,5 +1,6 @@
 //1552212 端启航
 #include <iostream>
+#include <NetworkUtility.h>
 #include "MMX/RsaSignature.h"
 #include "TCPServer.h"
 #include "Member.h"
@@ -33,14 +34,23 @@ void send_r(string id, u_int8_t type, string msg = "") {
 
 
 void onRecv_gm(ClientData *data) {
+    auto Log = get("console");
     header_t *header;
     header = (header_t *) (data->recv_playload);
+    stringstream ss;
+    NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
+    Log->debug("recv raw packet:\n{}", ss.str());
+
+    if (header->len + HEADLEN != data->recv_len) {
+        Log->debug("half packet detected!");
+        data->half = true;
+        return;
+    } else data->half = false;
 
     string msg, y, z, m, sig, vv;
     ZZ v;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
-            auto Log = get("console");
             Log->info("GM recv public para request");
             string id = get_str(data->recv_playload);
             data->id = id;
@@ -66,23 +76,20 @@ void onRecv_gm(ClientData *data) {
             break;
         }
         case PROTO_JOIN_GROUP: {
-            auto Log = get("console");
             Log->info("GM recv join group request");
             msg = get_str(data->recv_playload);
             v = gm->verify(data->id, msg);
             vv = Cryptography::numberToString(v, false);
             send_r(data->id, PROTO_JOIN_GROUP, vv);
-            gm->keyExchangeRequest(data->id);
+            send_r(data->id, PROTO_KEY_EX, gm->getKeyChain());
             break;
         }
         case PROTO_KEY_EX: {
-            auto Log = get("console");
             Log->info("GM recv key exchg msg");
             msg = get_str(data->recv_playload);
             gm->onKeyExchangeResponseRecv(msg);
             msg = gm->getBroadcastMsg();
-            // TODO
-//            server->broadcast(msg, msg.size());
+            server->Broadcast(msg, msg.size());
             break;
         }
         default:

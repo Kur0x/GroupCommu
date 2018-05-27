@@ -36,7 +36,7 @@ public:
 
     void setOnRecvCallBack(void(*callBack)(ClientData *));
 
-    void Broadcast(char *playload, size_t len);
+    void Broadcast(const string &playload, size_t len);
 
 private:
     u_int32_t ip;
@@ -44,6 +44,7 @@ private:
     struct sockaddr_in serv_addr;
     int server_sockfd;
     ClientData client_fds[CLIENT_MAX];
+    std::shared_ptr<logger> Log;
 
     //ClientData* cli_data;
 

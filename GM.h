@@ -27,10 +27,12 @@ namespace group_sig
 		ZZ verify(string id, string msg);
 		string open(ZZ gg, ZZ zz);
 		bool SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const;
-		void keyExchangeRequest(string id);
 		void onKeyExchangeResponseRecv(string msg);
 		string getBroadcastMsg();
-	private:
+
+        string getKeyChain();
+
+    private:
         shared_ptr<logger> Log;
 //		RSA::RsaSignature rsa_; // (n rsa_b)
 		ZZ G;
@@ -48,5 +50,5 @@ namespace group_sig
 		ZZ groupKey;
 		ZZ psk;
 
-	};
+    };
 }

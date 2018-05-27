@@ -2,10 +2,11 @@
 
 
 TCPServer::TCPServer(u_int32_t ip, uint16_t port) : ip(ip), portno(port) {
-    auto Log = get("console");
+    Log = get("console");
     Log->info("Initializing TCP server");
     for (int i = 0; i < CLIENT_MAX; i++) {
         client_fds[i].stat = ClientData::TO_RECV;
+        client_fds[i].half = false;
         client_fds[i].send_len = 0;
         client_fds[i].recv_len = 0;
         client_fds[i].clientfd = 0;
@@ -120,8 +121,11 @@ void TCPServer::StartServer() {
                     //TODO
                     if (client_fds[i].stat == ClientData::TO_RECV)//recv
                     {
-                        int ret = tcp_recv_server(client_fds[i].clientfd, client_fds[i].recv_playload,
-                                                  ClientData::BUFFER_LEN);
+                        if (!client_fds[i].half)
+                            client_fds[i].recv_len = 0;
+                        int ret = tcp_recv_server(client_fds[i].clientfd,
+                                                  client_fds[i].recv_playload + client_fds[i].recv_len,
+                                                  ClientData::BUFFER_LEN - client_fds[i].recv_len);
                         if (ret == 0) {
                             Log->info("A client disconnected!");
                             bzero(&client_fds[i], sizeof(client_fds[i]));
@@ -129,6 +133,7 @@ void TCPServer::StartServer() {
                             perror("recv");
                             exit(1);
                         }
+                        client_fds[i].recv_len += ret;
                         onRecvCallBack(&client_fds[i]);
                     }
                     if (client_fds[i].stat == ClientData::TO_SEND)//send
@@ -157,19 +162,14 @@ void TCPServer::StartServer() {
 int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
     int ret;
     if (len <= 0) {
-        //log->debug("invalid send recv_len");
+        Log->debug("invalid send recv_len");
         return -1;
     }
 
     do {
-        auto Log = get("console");
-        Log->info("Server sending to client");
         ret = send(clientfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
-    //log->debug("send return:{}", ret);
-    auto Log = get("console");
-    Log->info("Sending done");
-
+    Log->debug("send return:{}", ret);
     int i;
     for (i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].clientfd == clientfd)
@@ -182,7 +182,7 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
 
 //TODO 广播
 
-void TCPServer::Broadcast(char *playload, size_t len) {
+void TCPServer::Broadcast(const string &playload, size_t len) {
     int ret = -1;
     int sock = -1;
     int so_broadcast = 1;
@@ -201,7 +201,7 @@ void TCPServer::Broadcast(char *playload, size_t len) {
     broadcast_addr.sin_port = htons(BCAST_PORT);
     inet_pton(AF_INET, BCAST_IP, &broadcast_addr.sin_addr);
 
-    printf("\nBroadcast-IP: %s\n", inet_ntoa(broadcast_addr.sin_addr));
+    Log->info("Broadcast-IP: {}", inet_ntoa(broadcast_addr.sin_addr));
 
 
     //默认的套接字描述符sock是不支持广播，必须设置套接字描述符以支持广播
@@ -214,29 +214,23 @@ void TCPServer::Broadcast(char *playload, size_t len) {
         //广播发送服务器地址请求
         timeout.tv_sec = 2;  //超时时间为2秒
         timeout.tv_usec = 0;
-        ret = sendto(sock, playload, len, 0,
+        ret = sendto(sock, playload.c_str(), len, 0,
                      (struct sockaddr *) &broadcast_addr, sizeof(broadcast_addr));
         if (ret < 0)
             continue;
         else
             break;
-
     }
-
 }
 
 
 int TCPServer::tcp_recv_server(int clifd, char *data, size_t len) {
     if (!data) {
-        //log->debug("recv_playload is null");
-        auto Log = get("console");
         Log->error("Null payload recved from client");
         return -1;
     }
-    auto Log = get("console");
-    Log->info("Received msg from client");
     int ret = recv(clifd, data, len, 0);
-    //log->debug("read return:{}", ret);
+    Log->debug("read return:{}", ret);
     return ret;
 }
 
@@ -248,7 +242,7 @@ void TCPServer::SendPacket(string id, char *playload, size_t len) {
     }
 
     if (client_fds[i].send_len + len > ClientData::BUFFER_LEN) {
-        //log->critical("send buffer will overflow!");
+        Log->critical("send buffer will overflow!");
         return;
     }
     memcpy(client_fds[i].send_playload + client_fds[i].send_len, playload, len);
