@@ -189,7 +189,7 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     p.cnt = 1;
     Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false), Cryptography::numberToString(p.s[0], false));
     ZZ temp = MulMod(PowerMod(g, p.s[0], para->n), PowerMod(y, p.c, para->n), para->n);
-    Log->debug("c*x: {}", Cryptography::numberToString(p.c*this->x), false));
+    Log->debug("c*x: {}", Cryptography::numberToString(p.c * this->x), false);
     Log->debug("g^r 2: {}", Cryptography::numberToString(temp, false));
 
     return p;
