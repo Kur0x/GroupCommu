@@ -36,11 +36,13 @@ void send_req(u_int8_t type, string msg = "") {
 void onRecv_m(ClientData *data) {
     auto Log = get("console");
     header_t *header;
-    header = (header_t *) (data->recv_playload);
     stringstream ss;
     NetworkUtility::print_payload(ss,(const u_char*)data->recv_playload,data->recv_len);
     Log->debug("recv raw packet:\n{}",ss.str());
     string msg;
+    int off = 0;
+    NEXT:
+    header = (header_t *) (data->recv_playload + off);
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
             Log->info("Client recv public para msg");
@@ -76,6 +78,10 @@ void onRecv_m(ClientData *data) {
             Log->info("Client recv join group msg v");
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
+            if (header->len < data->recv_len) {
+                off += header->len;
+                goto NEXT;
+            }
             break;
         }
         case PROTO_KEY_EX: {
