@@ -183,44 +183,50 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
 //TODO 广播
 
 void TCPServer::Broadcast(const string &playload, size_t len) {
-    int ret = -1;
-    int sock = -1;
-    int so_broadcast = 1;
-    struct sockaddr_in broadcast_addr; //广播地址
-    struct timeval timeout;
-
-    //建立数据报套接字
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        perror("create socket failed:");
-        exit(0);
-    }
-
-    bzero(&broadcast_addr, sizeof(broadcast_addr));
-    broadcast_addr.sin_family = AF_INET;
-    broadcast_addr.sin_port = htons(BCAST_PORT);
-    inet_pton(AF_INET, BCAST_IP, &broadcast_addr.sin_addr);
-
-    Log->info("Broadcast-IP: {}", inet_ntoa(broadcast_addr.sin_addr));
-
-
-    //默认的套接字描述符sock是不支持广播，必须设置套接字描述符以支持广播
-    ret = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &so_broadcast,
-                     sizeof(so_broadcast));
-
-    //尝试发送多次广播，看网络上是否有服务器存在
-    int times = 10;
-    for (int i = 0; i < times; i++) {
-        //广播发送服务器地址请求
-        timeout.tv_sec = 2;  //超时时间为2秒
-        timeout.tv_usec = 0;
-        ret = sendto(sock, playload.c_str(), len, 0,
-                     (struct sockaddr *) &broadcast_addr, sizeof(broadcast_addr));
-        if (ret < 0)
+    Log->info("Broadcast");
+    for (int i = 0; i < CLIENT_MAX; i++) {
+        if (client_fds[i].clientfd <= 0)
             continue;
-        else
-            break;
+        SendPacket(client_fds[i].id, playload.c_str(), len);
     }
+//    int ret = -1;
+//    int sock = -1;
+//    int so_broadcast = 1;
+//    struct sockaddr_in broadcast_addr; //广播地址
+//    struct timeval timeout;
+//
+//    //建立数据报套接字
+//    sock = socket(AF_INET, SOCK_DGRAM, 0);
+//    if (sock < 0) {
+//        perror("create socket failed:");
+//        exit(0);
+//    }
+//
+//    bzero(&broadcast_addr, sizeof(broadcast_addr));
+//    broadcast_addr.sin_family = AF_INET;
+//    broadcast_addr.sin_port = htons(BCAST_PORT);
+//    inet_pton(AF_INET, BCAST_IP, &broadcast_addr.sin_addr);
+//
+//    Log->info("Broadcast-IP: {}", inet_ntoa(broadcast_addr.sin_addr));
+//
+//
+//    //默认的套接字描述符sock是不支持广播，必须设置套接字描述符以支持广播
+//    ret = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &so_broadcast,
+//                     sizeof(so_broadcast));
+//
+//    //尝试发送多次广播，看网络上是否有服务器存在
+//    int times = 10;
+//    for (int i = 0; i < times; i++) {
+//        //广播发送服务器地址请求
+//        timeout.tv_sec = 2;  //超时时间为2秒
+//        timeout.tv_usec = 0;
+//        ret = sendto(sock, playload.c_str(), len, 0,
+//                     (struct sockaddr *) &broadcast_addr, sizeof(broadcast_addr));
+//        if (ret < 0)
+//            continue;
+//        else
+//            break;
+//    }
 }
 
 
@@ -234,7 +240,7 @@ int TCPServer::tcp_recv_server(int clifd, char *data, size_t len) {
     return ret;
 }
 
-void TCPServer::SendPacket(string id, char *playload, size_t len) {
+void TCPServer::SendPacket(string id, const char *playload, size_t len) {
     int i;
     for (i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].id == id)

@@ -32,7 +32,7 @@ public:
 
     void StartServer();
 
-    void SendPacket(string id, char *playload, size_t len);
+    void SendPacket(string id, const char *playload, size_t len);
 
     void setOnRecvCallBack(void(*callBack)(ClientData *));
 

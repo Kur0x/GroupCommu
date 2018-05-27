@@ -95,6 +95,7 @@ void onRecv_m(ClientData *data) {
             Log->info("Client recv broadcast msg");
             msg = get_str(data->recv_playload);
             m->onGroupKeyBoardcastRecv(msg);
+            Log->info("initial state done!");
             break;
         }
         default:
