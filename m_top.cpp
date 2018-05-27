@@ -78,7 +78,7 @@ void onRecv_m(ClientData *data) {
             Log->info("Client recv join group msg v");
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
-            if (header->len < data->recv_len) {
+            if (header->len + HEADLEN < data->recv_len) {
                 off += header->len;
                 goto NEXT;
             }
@@ -97,6 +97,7 @@ void onRecv_m(ClientData *data) {
             break;
         }
         default:
+            Log->critical("unknown type: {0:x}", header->proto_type);
             break;
     }
 }
