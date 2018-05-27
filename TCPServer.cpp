@@ -22,7 +22,7 @@ TCPServer::~TCPServer() {
 
 void TCPServer::StartServer() {
     auto Log = get("console");
-    Log->info("Starting server");
+    Log->info("Starting server {}", portno);
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = ip;
@@ -59,7 +59,6 @@ void TCPServer::StartServer() {
         exit(1);
     }
 
-    printf("监听%d端口\n", portno);
     //listen，成功返回0，出错返回-1
     if (listen(server_sockfd, QUEUE) == -1) {
         perror("listen");
@@ -99,7 +98,7 @@ void TCPServer::StartServer() {
                     for (i = 0; i < CLIENT_MAX; i++)
                         if (!client_fds[i].clientfd) {
                             client_fds[i].clientfd = conn;
-                            printf("客户端%d连接成功\n", i + 1);
+                            Log->info("client connected: {}", i);
                             break;
                         }
                 }
