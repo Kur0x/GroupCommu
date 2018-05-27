@@ -80,8 +80,8 @@ string member::sig(const string &x) const {
     return this->sig(Cryptography::stringToNumber(x));
 }
 
-//参数的x和y是啥我也不知道 --by 震震
-bool member::ver(string msg, string sig) const {
+bool member::ver(string msg, string sig) const
+{
     ZZ m = Cryptography::stringToNumber(msg, false);
     stringstream stream(sig);
     string token;

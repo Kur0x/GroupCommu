@@ -22,7 +22,7 @@ namespace group_sig {
 
         std::string sig(const std::string &x) const;
 
-        bool ver(const ZZ &x, const ZZ &y) const;
+        bool ver(std::string msg, std::string sig) const;
 
         cspair SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const;
 
