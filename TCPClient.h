@@ -39,8 +39,6 @@ public:
 
 	void SendPacket(char *playload, size_t len);
 
-	void RecvBroadcast(char *playload, size_t len);
-
 private:
 	u_int32_t ip;
 	uint16_t portno;

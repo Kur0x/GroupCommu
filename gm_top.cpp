@@ -67,7 +67,7 @@ void onRecv_gm(ClientData *data) {
             str += Cryptography::numberToString(p.g, false) + " ";
             str += Cryptography::numberToString(p.n, false) + " ";
             str += to_string(p.lambda);
-            head.len = str.size();
+            head.len = str.size() + 1;
 
             char *buffer = new char[HEADLEN + head.len];
             memcpy(buffer, &head, HEADLEN);
@@ -97,7 +97,7 @@ void onRecv_gm(ClientData *data) {
             char *buffer = new char[packet_len];
             memcpy(buffer, &head, HEADLEN);
             memcpy(buffer + HEADLEN, msg.c_str(), msg.size() + 1);
-            server->Broadcast(msg, packet_len);
+            server->Broadcast(buffer, packet_len);
             delete[] buffer;
             break;
         }

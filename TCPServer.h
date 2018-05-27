@@ -36,6 +36,8 @@ public:
 
     void setOnRecvCallBack(void(*callBack)(ClientData *));
 
+    void setOnAcceptCallBack(void(*callBack)(ClientData *));
+
     void Broadcast(const string &playload, size_t len);
 
 private:
@@ -50,6 +52,8 @@ private:
 
     //回调函数
     void (*onRecvCallBack)(ClientData *data);
+
+    void (*onAcceptCallBack)(ClientData *data);
 
 
     int tcp_recv_server(int clifd, char *data, size_t len);

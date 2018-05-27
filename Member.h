@@ -39,6 +39,8 @@ namespace group_sig {
 
         void onGroupKeyBoardcastRecv(std::string msg);
 
+        ZZ groupKey;
+
     private:
         std::shared_ptr<logger> Log;
         const std::string id;
@@ -48,7 +50,6 @@ namespace group_sig {
         ZZ v;
         public_para *para;
 
-        ZZ groupKey;
         ZZ psk;
 
     };

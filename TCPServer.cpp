@@ -4,17 +4,9 @@
 TCPServer::TCPServer(u_int32_t ip, uint16_t port) : ip(ip), portno(port) {
     Log = get("console");
     Log->info("Initializing TCP server");
-    for (int i = 0; i < CLIENT_MAX; i++) {
-        client_fds[i].stat = ClientData::TO_RECV;
-        client_fds[i].half = false;
-        client_fds[i].send_len = 0;
-        client_fds[i].recv_len = 0;
-        client_fds[i].clientfd = 0;
-        client_fds[i].recv_playload = new char[ClientData::BUFFER_LEN];
-        client_fds[i].send_playload = new char[ClientData::BUFFER_LEN];
-    }
-
+    bzero(client_fds, CLIENT_MAX * sizeof(ClientData));
     onRecvCallBack = nullptr;
+    onAcceptCallBack = nullptr;
 }
 
 
@@ -99,7 +91,12 @@ void TCPServer::StartServer() {
                     for (i = 0; i < CLIENT_MAX; i++)
                         if (!client_fds[i].clientfd) {
                             client_fds[i].clientfd = conn;
+                            client_fds[i].recv_playload = new char[ClientData::BUFFER_LEN];
+                            client_fds[i].send_playload = new char[ClientData::BUFFER_LEN];
+                            client_fds[i].stat = ClientData::TO_RECV;
                             Log->info("client connected: {}", i);
+                            if (onAcceptCallBack != nullptr)
+                                onAcceptCallBack(&client_fds[i]);
                             break;
                         }
                 }
@@ -127,6 +124,8 @@ void TCPServer::StartServer() {
                                                   ClientData::BUFFER_LEN - client_fds[i].recv_len);
                         if (ret == 0) {
                             Log->info("A client disconnected!");
+                            delete client_fds[i].send_playload;
+                            delete client_fds[i].recv_playload;
                             bzero(&client_fds[i], sizeof(client_fds[i]));
                             continue;
                         } else if (ret < 0) {
@@ -179,9 +178,6 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
     return ret;
 }
 
-
-//TODO 广播
-
 void TCPServer::Broadcast(const string &playload, size_t len) {
     Log->info("Broadcast");
     for (int i = 0; i < CLIENT_MAX; i++) {
@@ -189,44 +185,6 @@ void TCPServer::Broadcast(const string &playload, size_t len) {
             continue;
         SendPacket(client_fds[i].id, playload.c_str(), len);
     }
-//    int ret = -1;
-//    int sock = -1;
-//    int so_broadcast = 1;
-//    struct sockaddr_in broadcast_addr; //广播地址
-//    struct timeval timeout;
-//
-//    //建立数据报套接字
-//    sock = socket(AF_INET, SOCK_DGRAM, 0);
-//    if (sock < 0) {
-//        perror("create socket failed:");
-//        exit(0);
-//    }
-//
-//    bzero(&broadcast_addr, sizeof(broadcast_addr));
-//    broadcast_addr.sin_family = AF_INET;
-//    broadcast_addr.sin_port = htons(BCAST_PORT);
-//    inet_pton(AF_INET, BCAST_IP, &broadcast_addr.sin_addr);
-//
-//    Log->info("Broadcast-IP: {}", inet_ntoa(broadcast_addr.sin_addr));
-//
-//
-//    //默认的套接字描述符sock是不支持广播，必须设置套接字描述符以支持广播
-//    ret = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &so_broadcast,
-//                     sizeof(so_broadcast));
-//
-//    //尝试发送多次广播，看网络上是否有服务器存在
-//    int times = 10;
-//    for (int i = 0; i < times; i++) {
-//        //广播发送服务器地址请求
-//        timeout.tv_sec = 2;  //超时时间为2秒
-//        timeout.tv_usec = 0;
-//        ret = sendto(sock, playload.c_str(), len, 0,
-//                     (struct sockaddr *) &broadcast_addr, sizeof(broadcast_addr));
-//        if (ret < 0)
-//            continue;
-//        else
-//            break;
-//    }
 }
 
 
@@ -258,5 +216,10 @@ void TCPServer::SendPacket(string id, const char *playload, size_t len) {
 
 void TCPServer::setOnRecvCallBack(void(*callBack)(ClientData *)) {
     onRecvCallBack = callBack;
+}
+
+void TCPServer::setOnAcceptCallBack(void (*callBack)(ClientData *)) {
+    onAcceptCallBack = callBack;
+
 }
 

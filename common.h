@@ -4,6 +4,7 @@
 #include "spdlog/spdlog.h"
 #include <functional>
 #include "murmur3.h"
+
 using namespace NTL;
 using namespace spdlog;
 //PROTOCOL
@@ -52,7 +53,6 @@ struct cspair {
 };
 
 class ClientData {
-    // TODO recv_playload struct
 public:
     int serverfd;
     static constexpr int BUFFER_LEN = 65536;
@@ -67,6 +67,7 @@ public:
     char *recv_playload;
     char *send_playload;
     bool half;
+    bool fin;
 };
 
 
@@ -86,3 +87,7 @@ namespace group_sig {
 }
 
 ZZ findRandomInZn(const ZZ &n);
+
+void encrypt(std::string &in, ZZ key);
+
+void decrypt(std::string &in, ZZ key);

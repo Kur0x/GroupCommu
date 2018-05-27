@@ -5,15 +5,19 @@
 #include "TCPClient.h"
 #include "Member.h"
 #include "NetworkUtility.h"
+#include "TCPServer.h"
+
 using namespace std;
 
 
 TCPClient *client;
+TCPServer *server_m;
 group_sig::member *m;
 
 string m_id;//id，由命令行输入
 ZZ m_psk;//id，由命令行输入
 
+char conf_type;
 
 void send_req(u_int8_t type, string msg = "") {
     auto Log = get("console");
@@ -37,8 +41,8 @@ void onRecv_m(ClientData *data) {
     auto Log = get("console");
     header_t *header;
     stringstream ss;
-    NetworkUtility::print_payload(ss,(const u_char*)data->recv_playload,data->recv_len);
-    Log->debug("recv raw packet:\n{}",ss.str());
+    NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
+    Log->debug("recv raw packet:\n{}", ss.str());
     string msg;
     int off = 0;
     NEXT:
@@ -96,6 +100,7 @@ void onRecv_m(ClientData *data) {
             msg = get_str(data->recv_playload);
             m->onGroupKeyBoardcastRecv(msg);
             Log->info("initial state done!");
+            data->fin = true;
             break;
         }
         default:
@@ -116,6 +121,8 @@ void onFin(ClientData */*data*/) {
     exit(0);
 }
 
+void commu(string ip, u_int16_t port);
+
 int main_m(string ip, u_int16_t port, string id, ZZ psk) {
     m_id = id;
     m_psk = psk;
@@ -126,5 +133,63 @@ int main_m(string ip, u_int16_t port, string id, ZZ psk) {
     client->setOnRecvCallBack(onRecv_m);
     client->setOnFinCallBack(onFin);
     client->ConnectServer();
+
+    commu("192.2.2.2", 4434);
     return 0;
+}
+
+void onRecv_mm(ClientData *data);
+
+void onAccept_mm(ClientData *data);
+
+void commu(string ip, u_int16_t port) {
+    server_m = new TCPServer(inet_addr("0.0.0.0"), port);
+    cout << "请输入类型：";
+    cin >> conf_type;
+    cout << "请输入对方ip：";
+    string commu_ip;
+    cin >> commu_ip;
+    if (conf_type == 's') {
+        server_m->setOnRecvCallBack(onRecv_mm);
+        server_m->setOnAcceptCallBack(onAccept_mm);
+        server_m->StartServer();
+    } else {
+        delete client;
+        client = new TCPClient(inet_addr(commu_ip.c_str()), port);
+        client->setOnConnectedCallBack(nullptr);
+        client->setOnRecvCallBack(onRecv_m);
+        client->setOnFinCallBack(onFin);
+        client->ConnectServer();
+    }
+}
+
+void onAccept_mm(ClientData *data) {
+    auto Log = get("console");
+    string send_buffer;
+    string msg;
+    msg = "testsetesteaaesteataestesrfekelfjasefkeafjael;kfjealkfjaeslkfjaeslfhaejklfheasafklaes";
+    send_buffer += msg;
+    send_buffer += " ";
+    send_buffer += m->sig(msg);
+    Log->debug("onAccept_mm/send buffer: {}", send_buffer);
+    encrypt(send_buffer, m->groupKey);
+    server_m->SendPacket(data->id, send_buffer.c_str(), send_buffer.size() + 1);
+}
+
+void onRecv_mm(ClientData *data) {
+    auto Log = get("console");
+
+    stringstream ss;
+    NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
+    Log->debug("recv raw packet:\n{}", ss.str());
+    string msg = data->recv_playload;
+    Log->debug("onRecv_mm/msg: {}", msg);
+    decrypt(msg, m->groupKey);
+    Log->debug("onRecv_mm/msg(decrypted): {}", msg);
+    stringstream sss(msg);
+    string mmp, sig;
+    sss >> mmp >> sig;
+    if (!m->ver(mmp, sig)) {
+        Log->error("msg verify error!");
+    } else Log->info("msg verify passed!");
 }
