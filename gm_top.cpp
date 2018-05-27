@@ -89,7 +89,16 @@ void onRecv_gm(ClientData *data) {
             msg = get_str(data->recv_playload);
             gm->onKeyExchangeResponseRecv(msg);
             msg = gm->getBroadcastMsg();
-            server->Broadcast(msg, msg.size());
+            header_t head;
+            head.proto_ori = PROTO_S2C;
+            head.proto_type = PROTO_KEY_BROADCAST;
+            head.len = msg.size() + 1;
+            int packet_len = HEADLEN + msg.size() + 1;
+            char *buffer = new char[packet_len];
+            memcpy(buffer, &head, HEADLEN);
+            memcpy(buffer + HEADLEN, msg.c_str(), msg.size() + 1);
+            server->Broadcast(msg, packet_len);
+            delete[] buffer;
             break;
         }
         default:
