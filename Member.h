@@ -26,11 +26,10 @@ namespace group_sig {
 
         cspair SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const;
 
-        cspair SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) const;
+        cspair SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const ZZ &alpha) const;
 
-        cspair SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) const;
+        cspair SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const ZZ &beta) const;
 
-        bool SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const;
 
         bool SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const cspair &p) const;
 

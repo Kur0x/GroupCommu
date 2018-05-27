@@ -39,6 +39,7 @@ string member::JoinGroupMsg(ZZ psk) {
 }
 
 bool member::onRecvV(string msg) {
+    v = Cryptography::stringToNumber(msg, false);
     return true;
 }
 
@@ -47,8 +48,8 @@ string member::sig(const ZZ &x) const {
     ZZ r = RandomBnd(para->n - 1) + 1; //[1,p-1]
     ZZ gg = PowerMod(para->g, r, para->n);
     ZZ zz = PowerMod(gg, y, para->n);
-    cspair v1 = SKLOGLOG(x, zz, gg, para->a);
-    cspair v2 = SKROOTLOG(x, MulMod(zz, gg, para->n), gg, para->b);
+    cspair v1 = SKLOGLOG(x, zz, gg, para->a, this->x);
+    cspair v2 = SKROOTLOG(x, MulMod(zz, gg, para->n), gg, para->b, v);
     string result = Cryptography::numberToString(gg, false) + ' ' +
                     Cryptography::numberToString(zz, false) + ' ' +
                     Cryptography::numberToString(v1.c, false);
@@ -80,11 +81,8 @@ string member::sig(const string &x) const {
 }
 
 //参数的x和y是啥我也不知道 --by 震震
-bool member::ver(const ZZ &x, const ZZ &y) const {
-    string sig;
-    ZZ m;
-    // TODO network
-    //recv(m, sig);
+bool member::ver(string msg, string sig) const {
+    ZZ m = Cryptography::stringToNumber(msg, false);
     stringstream stream(sig);
     string token;
     stream >> token;
@@ -196,17 +194,26 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     return p;
 }
 
-cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) const {
+ZZ findRandInlamda(const long &lambda, const ZZ &x){
+    ZZ result;
+    RandomBits(result, lambda);
+    while(result<x){
+        RandomBits(result, lambda);
+    }
+    return result;
+}
+
+cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const ZZ &alpha) const {
     cspair p;
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                        Cryptography::numberToString(g, false) + Cryptography::numberToString(a, false);
 
-    int k = 512;//由hash函数决定
-    long l = RandomBnd(k) + 1;
+    int k = 32;//由hash函数决定
+    long l = RandomBnd(k - 1) + 1;
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-        r[i] = findRandomInZn(para->n);
+        r[i] = findRandInlamda(para->lambda, alpha);
         r[i] = PowerMod(a, r[i], para->n);
         t[i] = PowerMod(g, r[i], para->n);
         concatStr += Cryptography::numberToString(t[i], false);
@@ -222,25 +229,24 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) cons
         if (IsZero((p.c >> i) & 0x1)) {
             p.s[i] = r[i];
         } else {
-            p.s[i] = r[i] - x;
+            p.s[i] = r[i] - alpha;
         }
     }
 
     return p;
 }
 
-cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) const {
+cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const ZZ &beta) const {
     cspair p;
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                        Cryptography::numberToString(g, false) + Cryptography::numberToString(e, false);
 
     int k = 32;//由hash函数决定
-    long l = RandomBnd(k) + 1;
+    long l = RandomBnd(k - 1) + 1;
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-        r[i] = RandomBnd(para->n - 1) + 1;//TODO wrong
-//        r[i] = RandomBnd()
+        r[i] = findRandInlamda(para->lambda, beta);
         r[i] = PowerMod(r[i], e, para->n);
         t[i] = PowerMod(g, r[i], para->n);
         concatStr += Cryptography::numberToString(t[i], false);
@@ -256,28 +262,16 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) con
         if (IsZero((p.c >> i) & 0x1)) {
             p.s[i] = r[i];
         } else {
-            ZZ temp = PowerMod(this->x, -1, para->n);
-            p.s[i] = MulMod(r[i], temp, para->n);
+//            ZZ temp = PowerMod(this->x, -1, para->n);
+//            p.s[i] = MulMod(r[i], temp, para->n);
+            p.s[i] = r[i] / beta;
+            p.s[i] = p.s[i] % para->n;
         }
     }
 
     return p;
 }
 
-bool member::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const {
-    string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
-                       Cryptography::numberToString(g, false) +
-                       Cryptography::numberToString(PowerMod(g, p.s[0], para->n) * PowerMod(y, p.c, para->n), false);
-
-
-    size_t n = h(concatStr);
-
-    ZZ cc = conv<ZZ>(n);
-    if (cc == p.c) {
-        return true;
-    }
-    return false;
-}
 
 bool member::SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const cspair &p) const {
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
