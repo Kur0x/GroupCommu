@@ -112,7 +112,7 @@ bool member::ver(const ZZ &x, const ZZ &y) const {
 }
 
 //传输的消息的格式是 gn gn gn...
-void member::onKeyExchangeRequestRecv(string msg) const {
+string member::onKeyExchangeRequestRecv(string msg) const {
     stringstream stream(msg);
     vector<ZZ> gn_buffer;
 
@@ -126,7 +126,7 @@ void member::onKeyExchangeRequestRecv(string msg) const {
     } else if (gn_buffer.size() == 1) {
         gn_output.push_back(*gn_buffer.begin());
         gn_output.push_back(PowerMod(para->g, x, para->n));
-        gn_output.push_back(PowerMod(gn_output.at(0), x, para->n));
+        gn_output.push_back(PowerMod(gn_output.at(0) % para->n , x, para->n));
     } else {
         gn_output.push_back(*gn_buffer.rbegin());
         for (auto it : gn_buffer) {
@@ -138,6 +138,7 @@ void member::onKeyExchangeRequestRecv(string msg) const {
     for (auto i:gn_output) {
         send_buf << Cryptography::numberToString(i, false) << " ";
     }
+    return send_buf.str();
     // TODO Network
     // sendtoGM(send_buf);
 }
@@ -168,7 +169,6 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                 Cryptography::numberToString(g, false) +
                 Cryptography::numberToString(PowerMod(g, r, para->n), false);
-    //TODO not para->n, rather, it should be para->G - 1
     Log->debug("g^r: {}", Cryptography::numberToString(PowerMod(g, r, para->n), false));
     Log->debug("SKLOG\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
                Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
@@ -176,11 +176,12 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
 
     n = h(concatStr);
 
-
-    //TODO seems that n may be smaller than c*x, so s may become negative, which is illegal
     p.c = conv<ZZ>(n);
     p.s.resize(1);
     p.s[0] = r - p.c * x;
+    Log->debug("x: {}", Cryptography::numberToString(x, false));
+    Log->debug("c: {}", Cryptography::numberToString(p.c, false));
+
     if (p.s[0] < 0) {
         Log->debug("fucked");
         goto fucked;
@@ -189,7 +190,7 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     p.cnt = 1;
     Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false), Cryptography::numberToString(p.s[0], false));
     ZZ temp = MulMod(PowerMod(g, p.s[0], para->n), PowerMod(y, p.c, para->n), para->n);
-    Log->debug("c*x: {}", Cryptography::numberToString(p.c * this->x), false);
+    Log->debug("c*x: {}", Cryptography::numberToString(p.c * this->x, false));
     Log->debug("g^r 2: {}", Cryptography::numberToString(temp, false));
 
     return p;
@@ -205,7 +206,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a) cons
     long l = RandomBnd(k) + 1;
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-        r[i] = RandomBnd(para->n - 1) + 1;
+        r[i] = findRandomInZn(para->n);
         r[i] = PowerMod(a, r[i], para->n);
         t[i] = PowerMod(g, r[i], para->n);
         concatStr += Cryptography::numberToString(t[i], false);
@@ -234,11 +235,12 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e) con
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                        Cryptography::numberToString(g, false) + Cryptography::numberToString(e, false);
 
-    int k = 512;//由hash函数决定
+    int k = 32;//由hash函数决定
     long l = RandomBnd(k) + 1;
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-        r[i] = RandomBnd(para->n - 1) + 1;
+        r[i] = RandomBnd(para->n - 1) + 1;//TODO wrong
+//        r[i] = RandomBnd()
         r[i] = PowerMod(r[i], e, para->n);
         t[i] = PowerMod(g, r[i], para->n);
         concatStr += Cryptography::numberToString(t[i], false);

@@ -36,7 +36,7 @@ namespace group_sig {
 
         bool SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const cspair &p) const;
 
-        void onKeyExchangeRequestRecv(std::string msg) const;
+        std::string onKeyExchangeRequestRecv(std::string msg) const;
 
         void onGroupKeyBoardcastRecv(std::string msg);
 
