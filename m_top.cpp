@@ -79,7 +79,7 @@ void onRecv_m(ClientData *data) {
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
-                off += header->len;
+                off += header->len + HEADLEN;
                 goto NEXT;
             }
             break;
@@ -87,7 +87,8 @@ void onRecv_m(ClientData *data) {
         case PROTO_KEY_EX: {
             Log->info("Client recv key exchg msg");
             msg = get_str(data->recv_playload);
-            m->onKeyExchangeRequestRecv(msg);
+            string ret = m->onKeyExchangeRequestRecv(msg);
+            send_req(PROTO_KEY_EX, ret);
             break;
         }
         case PROTO_KEY_BROADCAST: {

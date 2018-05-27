@@ -118,7 +118,6 @@ void TCPServer::StartServer() {
         for (i = 0; i < CLIENT_MAX; i++)
             if (client_fds[i].clientfd > 0) {
                 if (FD_ISSET(client_fds[i].clientfd, &rfds)) {
-                    //TODO
                     if (client_fds[i].stat == ClientData::TO_RECV)//recv
                     {
                         if (!client_fds[i].half)
@@ -129,6 +128,7 @@ void TCPServer::StartServer() {
                         if (ret == 0) {
                             Log->info("A client disconnected!");
                             bzero(&client_fds[i], sizeof(client_fds[i]));
+                            continue;
                         } else if (ret < 0) {
                             perror("recv");
                             exit(1);
