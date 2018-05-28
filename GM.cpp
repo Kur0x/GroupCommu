@@ -144,7 +144,7 @@ string GM::getBroadcastMsg() {
         broadcast_buf << it_i->id << ' ';
         broadcast_buf << Cryptography::numberToString(
                 PowerMod(*it, rsa_a, rsa_n), false) << ' ';
-        Log->debug("broadcast add: {}", broadcast_buf.str());
     }
+    Log->debug("broadcast: {}", broadcast_buf.str());
     return broadcast_buf.str();
 }

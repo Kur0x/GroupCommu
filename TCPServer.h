@@ -38,7 +38,7 @@ public:
 
     void setOnAcceptCallBack(void(*callBack)(ClientData *));
 
-    void Broadcast(const string &playload, size_t len);
+    void Broadcast(const char *playload, size_t len);
 
 private:
     u_int32_t ip;

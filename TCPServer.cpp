@@ -47,7 +47,7 @@ void TCPServer::StartServer() {
 
 
     //bind，成功返回0，出错返回-1
-    if (bind(server_sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) == -1) {
+    if (::bind(server_sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) == -1) {
         perror("bind");
         exit(1);
     }
@@ -66,9 +66,9 @@ void TCPServer::StartServer() {
 
     while (1) {
         int i;
-        fd_set rfds;
+        fd_set rfds, wfds;
         int retval1;
-        //int conn;
+        struct timeval timeout = {0, 30};
 
         FD_ZERO(&rfds);
         FD_SET(server_sockfd, &rfds);
@@ -76,11 +76,13 @@ void TCPServer::StartServer() {
         for (i = 0; i < CLIENT_MAX; i++)
             if (client_fds[i].clientfd) {
                 FD_SET(client_fds[i].clientfd, &rfds);
+                FD_SET(client_fds[i].clientfd, &wfds);
                 if (now_fd < client_fds[i].clientfd)
                     now_fd = client_fds[i].clientfd;
             }
-        retval1 = select(now_fd + 1, &rfds, NULL, NULL, NULL);
-
+        retval1 = select(now_fd + 1, &rfds, &wfds, NULL, &timeout);
+        if (retval1 < 0)
+            continue;
         if (retval1 > 0) {
             if (FD_ISSET(server_sockfd, &rfds)) {
                 int conn = accept(server_sockfd, (struct sockaddr *) &client_addr, &length);
@@ -114,7 +116,7 @@ void TCPServer::StartServer() {
 
         for (i = 0; i < CLIENT_MAX; i++)
             if (client_fds[i].clientfd > 0) {
-                if (FD_ISSET(client_fds[i].clientfd, &rfds)) {
+                if (FD_ISSET(client_fds[i].clientfd, &rfds))
                     if (client_fds[i].stat == ClientData::TO_RECV)//recv
                     {
                         if (!client_fds[i].half)
@@ -135,6 +137,9 @@ void TCPServer::StartServer() {
                         client_fds[i].recv_len += ret;
                         onRecvCallBack(&client_fds[i]);
                     }
+
+
+                if (FD_ISSET(client_fds[i].clientfd, &wfds))
                     if (client_fds[i].stat == ClientData::TO_SEND)//send
                     {
                         int ret = tcp_send_server(client_fds[i].clientfd, client_fds[i].send_playload,
@@ -149,9 +154,6 @@ void TCPServer::StartServer() {
                         }
 
                     }
-
-                }
-
             }
     }
 
@@ -169,6 +171,7 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
         ret = send(clientfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
     Log->debug("send return:{}", ret);
+
     int i;
     for (i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].clientfd == clientfd)
@@ -178,12 +181,13 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
     return ret;
 }
 
-void TCPServer::Broadcast(const string &playload, size_t len) {
+void TCPServer::Broadcast(const char *playload, size_t len) {
     Log->info("Broadcast");
+
     for (int i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].clientfd <= 0)
             continue;
-        SendPacket(client_fds[i].id, playload.c_str(), len);
+        SendPacket(client_fds[i].id, playload, len);
     }
 }
 
@@ -204,7 +208,7 @@ void TCPServer::SendPacket(string id, const char *playload, size_t len) {
         if (client_fds[i].id == id)
             break;
     }
-
+    Log->debug("send packet to {}", id);
     if (client_fds[i].send_len + len > ClientData::BUFFER_LEN) {
         Log->critical("send buffer will overflow!");
         return;
@@ -212,6 +216,7 @@ void TCPServer::SendPacket(string id, const char *playload, size_t len) {
     memcpy(client_fds[i].send_playload + client_fds[i].send_len, playload, len);
     client_fds[i].send_len += len;
     client_fds[i].stat = ClientData::TO_SEND;
+
 }
 
 void TCPServer::setOnRecvCallBack(void(*callBack)(ClientData *)) {
