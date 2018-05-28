@@ -92,6 +92,7 @@ void onRecv_gm(ClientData *data) {
             v = gm->verify(data->id, msg);
             vv = Cryptography::numberToString(v, false);
             send_r(data->id, PROTO_JOIN_GROUP, vv);
+            Log->debug("keychain: {}", gm->getKeyChain());
             send_r(data->id, PROTO_KEY_EX, gm->getKeyChain());
             break;
         }
