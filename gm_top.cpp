@@ -121,6 +121,8 @@ void onRecv_gm(ClientData *data) {
             Log->critical("unknown type: {0:x}", header->proto_type);
             break;
     }
+    if (!data->half)
+        data->recv_len = 0;
 }
 
 int main_gm(string ip, u_int16_t port, ZZ psk) {

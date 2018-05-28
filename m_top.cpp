@@ -82,14 +82,15 @@ void onRecv_m(ClientData *data) {
     Log->debug("recv raw packet:\n{}", ss.str());
 
 
-    int off = 0;
+
     NEXT:
-    header = (header_t *) (data->recv_playload + off);
+    header = (header_t *) (data->recv_playload);
     Log->debug("len+HEADLEN: {}", header->len + HEADLEN);
     if (header->len + HEADLEN > data->recv_len) {
         Log->debug("half packet deceted!");
+        data->half = true;
         return;
-    }
+    } else data->half = false;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
             Log->info("Client recv public para msg");
@@ -127,7 +128,11 @@ void onRecv_m(ClientData *data) {
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
                 Log->debug("dup packet detected");
-                off += header->len + HEADLEN;
+                char *buffer = new char[8192];
+                int packet1_len = header->len + HEADLEN;
+                memcpy(buffer, (char *) header + packet1_len, data->recv_len - packet1_len);
+                memcpy(data->recv_playload, buffer, data->recv_len - packet1_len);
+                data->recv_len = data->recv_len - packet1_len;
                 goto NEXT;
             }
             break;
@@ -139,7 +144,11 @@ void onRecv_m(ClientData *data) {
             send_req(PROTO_KEY_EX, ret);
             if (header->len + HEADLEN < data->recv_len) {
                 Log->debug("dup packet detected");
-                off += header->len + HEADLEN;
+                char *buffer = new char[8192];
+                int packet1_len = header->len + HEADLEN;
+                memcpy(buffer, (char *) header + packet1_len, data->recv_len - packet1_len);
+                memcpy(data->recv_playload, buffer, data->recv_len - packet1_len);
+                data->recv_len = data->recv_len - packet1_len;
                 goto NEXT;
             }
             break;

@@ -71,6 +71,7 @@ void TCPServer::StartServer() {
         struct timeval timeout = {0, 30};
 
         FD_ZERO(&rfds);
+        FD_ZERO(&wfds);
         FD_SET(server_sockfd, &rfds);
 
         for (i = 0; i < CLIENT_MAX; i++)
