@@ -120,9 +120,8 @@ string GM::getKeyChain() {
 }
 
 void GM::onKeyExchangeResponseRecv(string msg) {
+    Log->debug("onKeyExchangeResponseRecv/msg: {}", msg);
     istringstream stream(msg);
-    string sender;
-    stream >> sender;
     vector<ZZ> gn_buffer;
     string tmp;
     while (stream >> tmp) {
@@ -147,7 +146,7 @@ string GM::getBroadcastMsg() {
     for (auto it = keyChain.begin(); it != keyChain.end() && it_i != info.rend(); ++it, ++it_i) {
         broadcast_buf << it_i->id << ' ';
         broadcast_buf << Cryptography::numberToString(
-                PowerMod(*it, rsa_a, rsa_n), false) << ' ';
+                PowerMod(*it % n, rsa_a, rsa_n), false) << ' ';
     }
     Log->debug("broadcast: {}", broadcast_buf.str());
     return broadcast_buf.str();
