@@ -2,6 +2,7 @@
 // Created by kurox on 18-4-10.
 //
 
+#include <NetworkUtility.h>
 #include "TCPClient.h"
 
 
@@ -99,10 +100,13 @@ int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
     }
 
     do {
+        auto Log = get("console");
+        stringstream ss;
+        NetworkUtility::print_payload(ss, (const u_char *) data, len);
+        Log->debug("client send raw packet:\n{}", ss.str());
         ret = send(serverfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
     get("console")->debug("send return:{}", ret);
-    get("console")->info("Client sending done");
     cli_data->stat = ClientData::TO_RECV;
     return ret;
 }

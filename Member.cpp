@@ -119,7 +119,7 @@ string member::onKeyExchangeRequestRecv(string msg) const {
 
     string gn_str;
     while (stream >> gn_str) {
-        gn_buffer.push_back(Cryptography::stringToNumber(gn_str));
+        gn_buffer.push_back(Cryptography::stringToNumber(gn_str, false));
     }
     vector<ZZ> gn_output;
     if (gn_buffer.empty()) {

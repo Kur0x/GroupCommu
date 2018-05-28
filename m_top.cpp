@@ -204,7 +204,7 @@ int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
     m_id = id;
     m_psk = psk;
     auto Log = get("console");
-    Log->info("starting member at " + ip);
+    Log->info("starting member connecting " + ip);
     client = new TCPClient(inet_addr(ip.c_str()), port);
     client->setOnConnectedCallBack(onConnected);
     client->setOnRecvCallBack(onRecv_m);

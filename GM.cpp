@@ -114,7 +114,7 @@ bool GM::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const 
 string GM::getKeyChain() {
     stringstream msg;
     for (auto it:keyChain) {
-        msg << Cryptography::numberToString(it) << " ";
+        msg << Cryptography::numberToString(it, false) << " ";
     }
     return msg.str();
 }
