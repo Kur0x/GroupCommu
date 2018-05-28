@@ -44,6 +44,11 @@ void onRecv_m(ClientData *data) {
     NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
     Log->debug("recv raw packet:\n{}", ss.str());
     string msg;
+
+    if (header->len + HEADLEN < data->recv_len) {
+        Log->debug("half packet deceted!");
+        return;
+    }
     int off = 0;
     NEXT:
     header = (header_t *) (data->recv_playload + off);
@@ -83,6 +88,7 @@ void onRecv_m(ClientData *data) {
             msg = get_str(data->recv_playload);
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
+                Log->debug("dup packet detected");
                 off += header->len + HEADLEN;
                 goto NEXT;
             }
@@ -107,6 +113,7 @@ void onRecv_m(ClientData *data) {
             Log->critical("unknown type: {0:x}", header->proto_type);
             break;
     }
+    data->recv_len = 0;
 }
 
 void onConnected(ClientData */*data*/) {

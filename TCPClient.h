@@ -43,7 +43,6 @@ private:
 	u_int32_t ip;
 	uint16_t portno;
 	struct sockaddr_in serv_addr;
-	static constexpr int BCAST_PORT = 9999;
 
     //回调函数
 	void(*onRecvCallBack)(ClientData *data);

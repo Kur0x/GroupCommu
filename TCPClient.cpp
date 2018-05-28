@@ -5,7 +5,6 @@
 #include "TCPClient.h"
 
 
-
 TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
 
     auto Log = get("console");
@@ -66,14 +65,14 @@ void TCPClient::tcp_block() {
             }
             cli_data->send_len = 0;
         }
-        n = tcp_recv_server(cli_data->serverfd, cli_data->recv_playload, ClientData::BUFFER_LEN);
-        cli_data->recv_len = n;
+        n = tcp_recv_server(cli_data->serverfd, cli_data->recv_playload + cli_data->recv_len,
+                            ClientData::BUFFER_LEN - cli_data->recv_len);
+        cli_data->recv_len += n;
         if (n == 0) {
             if (onFinCallBack != nullptr)
                 onFinCallBack(cli_data);
         }
         if (n < 0) {
-            auto Log = get("console");
             Log->critical("Receiving msg from server error");
             exit(0);
         }
