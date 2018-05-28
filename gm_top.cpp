@@ -14,10 +14,10 @@ group_sig::GM *gm;
 
 string hardware_id;//id，由命令行输入
 
-void send_r(string id, u_int8_t type, string msg = "") {
+void send_r(const string &id, u_int8_t type, string msg = "") {
     auto Log = get("console");
-    Log->info("GM sending response of type {0:x}...", type);
-    header_t head;
+    Log->info("GM sending type {0:x} to {}", type, id);
+    header_t head{};
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
     if (msg == "") {
@@ -33,6 +33,17 @@ void send_r(string id, u_int8_t type, string msg = "") {
 }
 
 
+void handle_commu(const string &buf) {
+    auto Log = get("console");
+    string from;
+    string to;
+    string msg;
+    stringstream ss(buf);
+    ss >> from >> to >> msg;
+    Log->info("message from {} to {}", from, to);
+    send_r(to, PROTO_COMMU, buf);
+}
+
 void onRecv_gm(ClientData *data) {
     auto Log = get("console");
     header_t *header;
@@ -41,7 +52,7 @@ void onRecv_gm(ClientData *data) {
     NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
     Log->debug("recv raw packet:\n{}", ss.str());
 
-    if (header->len + HEADLEN != data->recv_len) {
+    if (header->len + HEADLEN > data->recv_len) {
         Log->debug("half packet detected!");
         data->half = true;
         return;
@@ -51,7 +62,7 @@ void onRecv_gm(ClientData *data) {
     ZZ v;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
-            Log->info("[{}] GM recv public para request", data->id);
+            Log->info("GM recv public para request form {}", data->id);
             string id = get_str(data->recv_playload);
             data->id = id;
             group_sig::public_para p = gm->getPublicPara();
@@ -76,7 +87,7 @@ void onRecv_gm(ClientData *data) {
             break;
         }
         case PROTO_JOIN_GROUP: {
-            Log->info("GM recv join group request");
+            Log->info("GM recv join group request form {}", data->id);
             msg = get_str(data->recv_playload);
             v = gm->verify(data->id, msg);
             vv = Cryptography::numberToString(v, false);
@@ -85,11 +96,11 @@ void onRecv_gm(ClientData *data) {
             break;
         }
         case PROTO_KEY_EX: {
-            Log->info("GM recv key exchg msg");
+            Log->info("GM recv key exchg msg form {}", data->id);
             msg = get_str(data->recv_playload);
             gm->onKeyExchangeResponseRecv(msg);
             msg = gm->getBroadcastMsg();
-            header_t head;
+            header_t head{};
             head.proto_ori = PROTO_S2C;
             head.proto_type = PROTO_KEY_BROADCAST;
             head.len = msg.size() + 1;
@@ -101,7 +112,13 @@ void onRecv_gm(ClientData *data) {
             delete[] buffer;
             break;
         }
+        case PROTO_COMMU: {
+            msg = get_str(data->recv_playload);
+            handle_commu(msg);
+            break;
+        }
         default:
+            Log->critical("unknown type: {0:x}", header->proto_type);
             break;
     }
 }

@@ -144,7 +144,8 @@ string GM::getBroadcastMsg() {
     for (auto it = keyChain.begin(); it < keyChain.end() - 1 && it_i >= info.begin(); ++it, --it_i) {
         broadcast_buf << it_i->id << ' ';
         broadcast_buf << Cryptography::numberToString(
-                PowerMod(*it, rsa_a, rsa_n)) << ' ';
+                PowerMod(*it, rsa_a, rsa_n), false) << ' ';
+        Log->debug("broadcast add: {}", broadcast_buf.str());
     }
     return broadcast_buf.str();
 }

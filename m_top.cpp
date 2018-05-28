@@ -19,7 +19,7 @@ ZZ m_psk;//id，由命令行输入
 
 char conf_type;
 
-void send_req(u_int8_t type, string msg = "") {
+void send_req(u_int8_t type, const string &msg = "") {
     auto Log = get("console");
     Log->info("Client sending request of type {0:x}...", type);
     header_t head;
@@ -37,20 +37,54 @@ void send_req(u_int8_t type, string msg = "") {
     }
 }
 
+void send_m(string to, string msg) {
+    auto Log = get("console");
+    string from = m_id;
+    Log->info("send message from {} to {}", from, to);
+    string buffer;
+    string encripted;
+    encripted += msg;
+    encripted += " ";
+    encripted += m->sig(msg);
+//    Log->debug("send_m/send buffer: {}", encripted);
+    encrypt(encripted, m->groupKey);
+    buffer += from + " ";
+    buffer += to + " ";
+    buffer += encripted + " ";
+    send_req(PROTO_COMMU, buffer);
+}
+
+void handle_m(const string &buf) {
+    auto Log = get("console");
+    string from;
+    string to;
+    string msg;
+    stringstream ss(buf);
+    ss >> from >> to >> msg;
+    Log->info("recv message from {} to {}", from, to);
+    decrypt(msg, m->groupKey);
+    Log->debug("onRecv_mm/msg(decrypted): {}", msg);
+    stringstream sss(msg);
+    string mmp, sig;
+    sss >> mmp >> sig;
+    if (!m->ver(mmp, sig)) {
+        Log->error("msg verify error!");
+    } else Log->info("msg verify passed!");
+}
+
+
 void onRecv_m(ClientData *data) {
     auto Log = get("console");
     header_t *header;
     stringstream ss;
     NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
     Log->debug("recv raw packet:\n{}", ss.str());
-    string msg;
-
 
 
     int off = 0;
     NEXT:
     header = (header_t *) (data->recv_playload + off);
-    Log->debug("len+HEADLEN: {}", header->len+HEADLEN);
+    Log->debug("len+HEADLEN: {}", header->len + HEADLEN);
     if (header->len + HEADLEN > data->recv_len) {
         Log->debug("half packet deceted!");
         return;
@@ -88,7 +122,7 @@ void onRecv_m(ClientData *data) {
         }
         case PROTO_JOIN_GROUP: {
             Log->info("Client recv join group msg v");
-            msg = get_str((char*)header);
+            string msg = get_str((char *) header);
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
                 Log->debug("dup packet detected");
@@ -99,7 +133,7 @@ void onRecv_m(ClientData *data) {
         }
         case PROTO_KEY_EX: {
             Log->info("Client recv key exchg msg");
-            msg = get_str((char*)header);
+            string msg = get_str((char *) header);
             string ret = m->onKeyExchangeRequestRecv(msg);
             send_req(PROTO_KEY_EX, ret);
             if (header->len + HEADLEN < data->recv_len) {
@@ -111,10 +145,13 @@ void onRecv_m(ClientData *data) {
         }
         case PROTO_KEY_BROADCAST: {
             Log->info("Client recv broadcast msg");
-            msg = get_str((char*)header);
+            string msg = get_str((char *) header);
             m->onGroupKeyBoardcastRecv(msg);
             Log->info("initial state done!");
-            data->fin = true;
+            break;
+        }
+        case PROTO_COMMU: {
+            handle_m(get_str((char *) header));
             break;
         }
         default:
@@ -136,9 +173,19 @@ void onFin(ClientData */*data*/) {
     exit(0);
 }
 
-void commu(string ip, u_int16_t port);
+void sigroutine(int dunno) { /* 信号处理例程，其中dunno将会得到信号的值 */
+    string to;
+    string msg;
+    cout << "\n请输入对方id：";
+    cin >> to;
+    cout << "请输入要发送的消息：";
+    cin >> msg;
+    send_m(to, msg);
+}
 
-int main_m(string ip, u_int16_t port, string id, ZZ psk) {
+int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
+
+    signal(SIGTSTP, sigroutine);
     m_id = id;
     m_psk = psk;
     auto Log = get("console");
@@ -149,64 +196,6 @@ int main_m(string ip, u_int16_t port, string id, ZZ psk) {
     client->setOnFinCallBack(onFin);
     client->ConnectServer();
 
-    commu("192.2.2.2", 4434);
     return 0;
 }
 
-void onRecv_mm(ClientData *data);
-
-void onAccept_mm(ClientData *data);
-
-void commu(string ip, u_int16_t port) {
-    cout << "请输入类型：";
-    cin >> conf_type;
-
-    if (conf_type == 's') {
-        server_m = new TCPServer(inet_addr("0.0.0.0"), port);
-        server_m->setOnRecvCallBack(onRecv_mm);
-        server_m->setOnAcceptCallBack(onAccept_mm);
-        server_m->StartServer();
-    } else {
-        cout << "请输入对方ip：";
-        string commu_ip;
-        cin >> commu_ip;
-        delete client;
-        client = new TCPClient(inet_addr(commu_ip.c_str()), port);
-        client->setOnConnectedCallBack(nullptr);
-        client->setOnRecvCallBack(onRecv_m);
-        client->setOnFinCallBack(onFin);
-        client->ConnectServer();
-    }
-}
-
-void onAccept_mm(ClientData *data) {
-    auto Log = get("console");
-    Log->debug("onAccept_mm");
-    string send_buffer;
-    string msg;
-    msg = "testsetesteaaesteataestesrfekelfjasefkeafjael;kfjealkfjaeslkfjaeslfhaejklfheasafklaes";
-    send_buffer += msg;
-    send_buffer += " ";
-    send_buffer += m->sig(msg);
-    Log->debug("onAccept_mm/send buffer: {}", send_buffer);
-    encrypt(send_buffer, m->groupKey);
-    server_m->SendPacket(data->id, send_buffer.c_str(), send_buffer.size() + 1);
-}
-
-void onRecv_mm(ClientData *data) {
-    auto Log = get("console");
-
-    stringstream ss;
-    NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
-    Log->debug("recv raw packet:\n{}", ss.str());
-    string msg = data->recv_playload;
-    Log->debug("onRecv_mm/msg: {}", msg);
-    decrypt(msg, m->groupKey);
-    Log->debug("onRecv_mm/msg(decrypted): {}", msg);
-    stringstream sss(msg);
-    string mmp, sig;
-    sss >> mmp >> sig;
-    if (!m->ver(mmp, sig)) {
-        Log->error("msg verify error!");
-    } else Log->info("msg verify passed!");
-}

@@ -14,12 +14,16 @@ using namespace spdlog;
 #define PROTO_JOIN_GROUP 0x02
 #define PROTO_KEY_EX 0x03
 #define PROTO_KEY_BROADCAST 0x04
+#define PROTO_COMMU 0x05
 #define HEADLEN 4
 
 struct header_t {
     uint8_t proto_ori;
     uint8_t proto_type;
     uint16_t len;
+};
+struct commu_t {
+    header_t header;
 };
 
 
