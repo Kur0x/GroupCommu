@@ -28,6 +28,8 @@ struct commu_t {
 
 
 inline std::string get_str(char *src) {
+    if (((header_t *) (src))->len == 0)
+        return "";
     return std::string(src + HEADLEN);
 }
 
