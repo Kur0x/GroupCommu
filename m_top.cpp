@@ -150,17 +150,18 @@ void onRecv_mm(ClientData *data);
 void onAccept_mm(ClientData *data);
 
 void commu(string ip, u_int16_t port) {
-    server_m = new TCPServer(inet_addr("0.0.0.0"), port);
     cout << "请输入类型：";
     cin >> conf_type;
-    cout << "请输入对方ip：";
-    string commu_ip;
-    cin >> commu_ip;
+
     if (conf_type == 's') {
+        server_m = new TCPServer(inet_addr("0.0.0.0"), port);
         server_m->setOnRecvCallBack(onRecv_mm);
         server_m->setOnAcceptCallBack(onAccept_mm);
         server_m->StartServer();
     } else {
+        cout << "请输入对方ip：";
+        string commu_ip;
+        cin >> commu_ip;
         delete client;
         client = new TCPClient(inet_addr(commu_ip.c_str()), port);
         client->setOnConnectedCallBack(nullptr);
