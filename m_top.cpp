@@ -185,7 +185,14 @@ void sigroutine(int dunno) { /* 信号处理例程，其中dunno将会得到信�
 
 int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
 
-    signal(SIGTSTP, sigroutine);
+//    signal(SIGTSTP, sigroutine);
+    sigaction act, oact;
+    act.sa_handler = sigroutine;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0|SA_INTERRUPT;
+
+    sigaction(SIGTSTP, &act, &oact);
+
     m_id = id;
     m_psk = psk;
     auto Log = get("console");

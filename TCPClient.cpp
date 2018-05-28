@@ -75,6 +75,9 @@ void TCPClient::tcp_block() {
                 onFinCallBack(cli_data);
         }
         if (n < 0) {
+            if(errno == EINTR){
+                continue;
+            }
             Log->critical("Receiving msg from server error");
             exit(0);
         }

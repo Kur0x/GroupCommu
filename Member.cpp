@@ -131,7 +131,7 @@ string member::onKeyExchangeRequestRecv(string msg) const {
     } else {
         gn_output.push_back(*gn_buffer.rbegin());
         for (auto it : gn_buffer) {
-            gn_output.push_back(PowerMod(it, x, para->n));
+            gn_output.push_back(PowerMod(it % para->n, x, para->n));
         }
     }
 

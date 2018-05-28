@@ -5,7 +5,7 @@ using namespace std;
 
 extern int main_gm(string ip, u_int16_t port, ZZ psk);
 
-int main_m(string ip, u_int16_t port, string id, ZZ psk);
+int main_m(string ip, u_int16_t port, string id, const ZZ &psk);
 
 int main() {
     // Console logger with color
@@ -15,7 +15,7 @@ int main() {
     Log->info("Program started");
 
 //    main_gm("192.168.1.2", 9999, conv<ZZ>(233333));
-    main_m("192.168.1.2", 9999, "Bob", conv<ZZ>(233333));
+    main_m("192.168.1.2", 9999, "Alice", conv<ZZ>(233333));
 //    main_m("58.41.206.227", 9999, "Alice", conv<ZZ>(233333));
 
     return 0;
