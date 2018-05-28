@@ -43,11 +43,11 @@ void TCPClient::ConnectServer() {
         Log->critical("Connect error!");
         exit(-1);
     }
-    Log->info("Connected to Serve");
+    Log->info("Connected to Server");
 
     if (onConnectedCallBack != nullptr) {
         onConnectedCallBack(cli_data);
-    }
+    } else cli_data->stat = ClientData::TO_RECV;
     tcp_block();
     //    }
 }
@@ -65,6 +65,8 @@ void TCPClient::tcp_block() {
             }
             cli_data->send_len = 0;
         }
+        if (cli_data->fin)
+            return;
         n = tcp_recv_server(cli_data->serverfd, cli_data->recv_playload + cli_data->recv_len,
                             ClientData::BUFFER_LEN - cli_data->recv_len);
         cli_data->recv_len += n;
