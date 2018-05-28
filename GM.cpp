@@ -29,14 +29,13 @@ void GM::init() {
 //	prime factors of n_, and
 //	_ an upper bound _ on the length of the secret keys and a constant _ _ 1
 //	_these parameters are required for the SKLOGLOG signatures_
-    G = Cryptography::findPrime(1024);
+    G = Cryptography::findPrime(512);
     g = Cryptography::findPrimitiveRoot(G);
     n = rsa_n = G - 1;// 群的阶和rsa的n
     rsa_b = findRandomInZn(n);
     rsa_a = InvMod(rsa_b, G);
 
     a = findRandomInZn(n);//TODO doesn't not know a's meaning
-    lambda = 512;
     epsilon = 5;
 }
 

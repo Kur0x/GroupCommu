@@ -16,7 +16,7 @@ string hardware_id;//id，由命令行输入
 
 void send_r(const string &id, u_int8_t type, string msg = "") {
     auto Log = get("console");
-    Log->info("GM sending type {0:x} to {}", type, id);
+    Log->info("GM sending type {0:x} to {1}", type, id);
     header_t head{};
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
@@ -126,7 +126,7 @@ void onRecv_gm(ClientData *data) {
 int main_gm(string ip, u_int16_t port, ZZ psk) {
     auto Log = get("console");
     Log->info("starting GM");
-    gm = new group_sig::GM(512, psk);
+    gm = new group_sig::GM(128, psk);
     server = new TCPServer(inet_addr(ip.c_str()), port);
     server->setOnRecvCallBack(onRecv_gm);
     server->StartServer();
