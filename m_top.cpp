@@ -139,6 +139,7 @@ void onRecv_m(ClientData *data) {
         case PROTO_KEY_EX: {
             Log->info("Client recv key exchg msg");
             string msg = get_str((char *) header);
+            Log->debug("PROTO_KEY_EX/msg: {}", msg);
             string ret = m->onKeyExchangeRequestRecv(msg);
             send_req(PROTO_KEY_EX, ret);
             if (header->len + HEADLEN < data->recv_len) {

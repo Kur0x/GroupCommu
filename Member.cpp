@@ -115,6 +115,7 @@ bool member::ver(string msg, string sig) const
 //传输的消息的格式是 gn gn gn...
 string member::onKeyExchangeRequestRecv(string msg) const {
     stringstream stream(msg);
+    Log->debug("onKeyExchangeRequestRecv/msg: {}", msg);
     vector<ZZ> gn_buffer;
 
     string gn_str;
