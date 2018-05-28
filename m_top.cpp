@@ -85,7 +85,6 @@ void onRecv_m(ClientData *data) {
 
     NEXT:
     header = (header_t *) (data->recv_playload);
-    Log->debug("len+HEADLEN: {}", header->len + HEADLEN);
     if (header->len + HEADLEN > data->recv_len) {
         Log->debug("half packet deceted!");
         data->half = true;

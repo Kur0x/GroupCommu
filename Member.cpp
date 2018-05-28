@@ -147,14 +147,15 @@ void member::onGroupKeyBoardcastRecv(string msg) {
     Log->debug("onGroupKeyBoardcastRecv/msg: {}", msg);
     string id, gn;
     while (stream >> id >> gn) {
-        Log->debug("id: {}", id);
-        Log->debug("gn: {}", gn);
+//        Log->debug("id: {}", id);
+//        Log->debug("gn: {}", gn);
         if (id == this->id) {
             groupKey = PowerMod(Cryptography::stringToNumber(gn, false) % para->n, x, para->n);
-            Log->debug("Group key: {}", Cryptography::numberToString(groupKey, false));
-            break;
+            Log->debug("Group key update: {}", Cryptography::numberToString(groupKey, false));
+            return;
         }
     }
+    Log->error("No Group key!!!");
 }
 
 

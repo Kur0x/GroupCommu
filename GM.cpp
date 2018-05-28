@@ -132,15 +132,19 @@ void GM::onKeyExchangeResponseRecv(string msg) {
 
     //set groupKey
     groupKey = PowerMod(*keyChain.rbegin(), rsa_a, rsa_n);
-
+    Log->info("Group key update: {}", Cryptography::numberToString(groupKey, false));
 
 }
 
+// FIXME: size dont match
 string GM::getBroadcastMsg() {
     //广播消息的格式是id gn id gn id gn...
     stringstream broadcast_buf;
-    auto it_i = info.end() - 1;
-    for (auto it = keyChain.begin(); it < keyChain.end() - 1 && it_i >= info.begin(); ++it, --it_i) {
+    auto it_i = info.rbegin();
+    if (keyChain.size() != info.size()) {
+        Log->debug("size dont match!!");
+    }
+    for (auto it = keyChain.begin(); it != keyChain.end() && it_i != info.rend(); ++it, ++it_i) {
         broadcast_buf << it_i->id << ' ';
         broadcast_buf << Cryptography::numberToString(
                 PowerMod(*it, rsa_a, rsa_n), false) << ' ';
