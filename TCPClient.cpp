@@ -91,7 +91,7 @@ void TCPClient::tcp_block() {
 int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
     int ret;
     if (len <= 0) {
-        get("console")->debug("invalid send recv_len");
+        get("console")->debug("invalid send len");
         return -1;
     }
 

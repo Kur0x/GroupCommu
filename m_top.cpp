@@ -45,13 +45,16 @@ void onRecv_m(ClientData *data) {
     Log->debug("recv raw packet:\n{}", ss.str());
     string msg;
 
-    if (header->len + HEADLEN < data->recv_len) {
-        Log->debug("half packet deceted!");
-        return;
-    }
+
+
     int off = 0;
     NEXT:
     header = (header_t *) (data->recv_playload + off);
+    Log->debug("len+HEADLEN: {}", header->len+HEADLEN);
+    if (header->len + HEADLEN > data->recv_len) {
+        Log->debug("half packet deceted!");
+        return;
+    }
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
             Log->info("Client recv public para msg");
@@ -85,7 +88,7 @@ void onRecv_m(ClientData *data) {
         }
         case PROTO_JOIN_GROUP: {
             Log->info("Client recv join group msg v");
-            msg = get_str(data->recv_playload);
+            msg = get_str((char*)header);
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
                 Log->debug("dup packet detected");
@@ -96,14 +99,19 @@ void onRecv_m(ClientData *data) {
         }
         case PROTO_KEY_EX: {
             Log->info("Client recv key exchg msg");
-            msg = get_str(data->recv_playload);
+            msg = get_str((char*)header);
             string ret = m->onKeyExchangeRequestRecv(msg);
             send_req(PROTO_KEY_EX, ret);
+            if (header->len + HEADLEN < data->recv_len) {
+                Log->debug("dup packet detected");
+                off += header->len + HEADLEN;
+                goto NEXT;
+            }
             break;
         }
         case PROTO_KEY_BROADCAST: {
             Log->info("Client recv broadcast msg");
-            msg = get_str(data->recv_playload);
+            msg = get_str((char*)header);
             m->onGroupKeyBoardcastRecv(msg);
             Log->info("initial state done!");
             data->fin = true;
@@ -173,6 +181,7 @@ void commu(string ip, u_int16_t port) {
 
 void onAccept_mm(ClientData *data) {
     auto Log = get("console");
+    Log->debug("onAccept_mm");
     string send_buffer;
     string msg;
     msg = "testsetesteaaesteataestesrfekelfjasefkeafjael;kfjealkfjaeslkfjaeslfhaejklfheasafklaes";

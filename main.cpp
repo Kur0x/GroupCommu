@@ -15,7 +15,7 @@ int main() {
     Log->info("Program started");
 
 //    main_gm("192.168.1.2", 9999, conv<ZZ>(233333));
-    main_m("192.168.1.2", 9999, "Alice", conv<ZZ>(233333));
+    main_m("192.168.1.2", 9999, "Bob", conv<ZZ>(233333));
 //    main_m("58.41.206.227", 9999, "Alice", conv<ZZ>(233333));
 
     return 0;

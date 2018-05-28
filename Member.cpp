@@ -50,6 +50,7 @@ string member::sig(const ZZ &x) const {
     ZZ zz = PowerMod(gg, y, para->n);
     cspair v1 = SKLOGLOG(x, zz, gg, para->a, this->x);
     cspair v2 = SKROOTLOG(x, MulMod(zz, gg, para->n), gg, para->b, v);
+    Log->debug("SKROOTLOG done");
     string result = Cryptography::numberToString(gg, false) + ' ' +
                     Cryptography::numberToString(zz, false) + ' ' +
                     Cryptography::numberToString(v1.c, false);
@@ -57,6 +58,7 @@ string member::sig(const ZZ &x) const {
     int2str(v1.cnt, cnt_str);
     result += ' ';
     result += cnt_str;
+    Log->debug("v1.cnt: {}", v1.cnt);
     for (int i = 0; i < v1.cnt; i++) {
         result += ' ';
         result += Cryptography::numberToString(v1.s[i], false);
@@ -67,6 +69,7 @@ string member::sig(const ZZ &x) const {
     int2str(v2.cnt, cnt_str);
     result += ' ';
     result += cnt_str;
+    Log->debug("v2.cnt: {}", v2.cnt);
     for (int i = 0; i < v2.cnt; i++) {
         result += ' ';
         result += Cryptography::numberToString(v2.s[i], false);
@@ -137,16 +140,18 @@ string member::onKeyExchangeRequestRecv(string msg) const {
         send_buf << Cryptography::numberToString(i, false) << " ";
     }
     return send_buf.str();
-    // TODO Network
-    // sendtoGM(send_buf);
 }
 
 void member::onGroupKeyBoardcastRecv(string msg) {
     stringstream stream(msg);
+    Log->debug("onGroupKeyBoardcastRecv/msg: {}", msg);
     string id, gn;
     while (stream >> id >> gn) {
+        Log->debug("id: {}", id);
+        Log->debug("gn: {}", gn);
         if (id == this->id) {
-            groupKey = PowerMod(Cryptography::stringToNumber(gn), x, para->n);
+            groupKey = PowerMod(Cryptography::stringToNumber(gn, false) % para->n, x, para->n);
+            Log->debug("Group key: {}", Cryptography::numberToString(groupKey, false));
             break;
         }
     }
@@ -194,16 +199,19 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const {
     return p;
 }
 
-ZZ findRandInlamda(const long &lambda, const ZZ &x){
+ZZ findRandInlamda(const long &lambda, const ZZ &x, int type=1){
     ZZ result;
     RandomBits(result, lambda);
-    while(result<x){
-        RandomBits(result, lambda);
+    if(type == 1) {
+        while (result < x) {
+            RandomBits(result, lambda);
+        }
     }
     return result;
 }
 
 cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const ZZ &alpha) const {
+    Log->debug("SKLOGLOG");
     cspair p;
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
@@ -237,6 +245,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, cons
 }
 
 cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const ZZ &beta) const {
+    Log->debug("SKROOTLOG");
     cspair p;
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
@@ -244,14 +253,14 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, con
 
     int k = 32;//由hash函数决定
     long l = RandomBnd(k - 1) + 1;
+    Log->debug("l in SKROOTLOG: {}", l);
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-        r[i] = findRandInlamda(para->lambda, beta);
+        r[i] = findRandInlamda(para->lambda, beta, 2);
         r[i] = PowerMod(r[i], e, para->n);
         t[i] = PowerMod(g, r[i], para->n);
         concatStr += Cryptography::numberToString(t[i], false);
     }
-
 
     size_t n = h(concatStr);
 
