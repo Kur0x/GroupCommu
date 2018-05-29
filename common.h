@@ -16,7 +16,7 @@ using namespace spdlog;
 #define PROTO_KEY_BROADCAST 0x04
 #define PROTO_COMMU 0x05
 #define HEADLEN 4
-
+#define ID_LEN 16
 struct header_t {
     uint8_t proto_ori;
     uint8_t proto_type;
@@ -28,9 +28,13 @@ struct commu_t {
 
 
 inline std::string get_str(char *src) {
-    if (((header_t *) (src))->len == 0)
+    int size = ((header_t *) (src))->len;
+    if (size == 0)
         return "";
-    return std::string(src + HEADLEN);
+    std::string str(src + HEADLEN);
+    if (str.size() + 1 != size)
+        get("console")->critical("\\0 error in get_str {}/{}", str.size(), size);
+    return str;
 }
 
 struct cspair {
@@ -97,3 +101,5 @@ ZZ findRandomInZn(const ZZ &n);
 void encrypt(std::string &in, ZZ key);
 
 void decrypt(std::string &in, ZZ key);
+
+void decrypt(char *in, ZZ key, int len);

@@ -29,19 +29,35 @@ void send_r(const string &id, u_int8_t type, string msg = "") {
         memcpy(buffer, &head, HEADLEN);
         memcpy(buffer + HEADLEN, msg.c_str(), msg.size() + 1);
         server->SendPacket(id, buffer, HEADLEN + msg.size() + 1);
+        delete[] buffer;
     }
 }
 
-
-void handle_commu(const string &buf) {
+void send_r(const string &id, u_int8_t type, const char *payload, u_int16_t len) {
     auto Log = get("console");
-    string from;
-    string to;
-    string msg;
-    stringstream ss(buf);
-    ss >> from >> to >> msg;
+    Log->info("GM sending type {0:x} to {1}", type, id);
+    header_t head{};
+    head.proto_ori = PROTO_S2C;
+    head.proto_type = type;
+
+    head.len = len;
+    char *buffer = new char[HEADLEN + len];
+    memcpy(buffer, &head, HEADLEN);
+    memcpy(buffer + HEADLEN, payload, len);
+    server->SendPacket(id, buffer, HEADLEN + len);
+    delete[] buffer;
+
+}
+
+
+void handle_commu(const char *buf) {
+    auto Log = get("console");
+    char from[ID_LEN];
+    char to[ID_LEN];
+    memcpy(from, buf + HEADLEN, ID_LEN);
+    memcpy(to, buf + HEADLEN + ID_LEN, ID_LEN);
     Log->info("message from {} to {}", from, to);
-    send_r(to, PROTO_COMMU, buf);
+    send_r(to, PROTO_COMMU, buf + HEADLEN, ((header_t *) buf)->len);
 }
 
 void onRecv_gm(ClientData *data) {
@@ -114,8 +130,7 @@ void onRecv_gm(ClientData *data) {
             break;
         }
         case PROTO_COMMU: {
-            msg = get_str(data->recv_playload);
-            handle_commu(msg);
+            handle_commu(data->recv_playload);
             break;
         }
         default:
@@ -129,7 +144,7 @@ void onRecv_gm(ClientData *data) {
 int main_gm(string ip, u_int16_t port, ZZ psk) {
     auto Log = get("console");
     Log->info("starting GM");
-    gm = new group_sig::GM(128, psk);
+    gm = new group_sig::GM(64, psk);
     server = new TCPServer(inet_addr(ip.c_str()), port);
     server->setOnRecvCallBack(onRecv_gm);
     server->StartServer();

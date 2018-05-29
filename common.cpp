@@ -26,3 +26,10 @@ void encrypt(std::string &in, ZZ key) {
 void decrypt(std::string &in, ZZ key) {
     return encrypt(in, key);
 }
+
+void decrypt(char *in, ZZ key, int len) {
+    string _key = Cryptography::numberToString(key);
+    for (int i = 0; i < len - 1; ++i) {
+        in[i] ^= _key[i % _key.size()];
+    }
+}

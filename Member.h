@@ -31,7 +31,7 @@ namespace group_sig {
         cspair SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const ZZ &beta) const;
 
 
-        bool SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const cspair &p) const;
+        bool SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &ax, const ZZ &a, const cspair &p) const;
 
         bool SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const cspair &p) const;
 

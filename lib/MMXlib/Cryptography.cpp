@@ -4,11 +4,11 @@
 ZZ Cryptography::stringToNumber(string str, bool bin) {
     // 二进制模式。可以把字母转换成数字
     if (bin) {
-        ZZ number = conv<ZZ>((unsigned char)str[0]);
+        ZZ number = conv<ZZ>((unsigned char) str[0]);
         long len = str.length();
         for (long i = 1; i < len; i++) {
             number *= 128;
-            number += conv<ZZ>((unsigned char)str[i]);
+            number += conv<ZZ>((unsigned char) str[i]);
         }
         return number;
     }
@@ -66,11 +66,12 @@ ZZ Cryptography::findPrimitiveRoot(const ZZ &p) {
     //p-1的两个因子p1,p2
     ZZ p1 = conv<ZZ>("2");
     ZZ p2 = (p - 1) / p1;
+    ZZ g = conv<ZZ>(2);
     while (true) {
-        ZZ g = RandomBnd(p - 3) + 2;
         //g是p的本原元当且仅当g对p-1的所有因子都有g^((p-1)/p[i]) (mod p) 不等于 1
         if (PowerMod(g, (p - 1) / p1, p) != 1)
             if (PowerMod(g, (p - 1) / p2, p) != 1)
                 return g;
+        g++;
     }
 }

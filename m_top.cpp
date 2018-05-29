@@ -35,39 +35,63 @@ void send_req(u_int8_t type, const string &msg = "") {
         memcpy(buffer, &head, HEADLEN);
         memcpy(buffer + HEADLEN, msg.c_str(), msg.size() + 1);
         client->SendPacket(buffer, HEADLEN + msg.size() + 1);
+        delete[] buffer;
     }
+}
+
+void send_req(u_int8_t type, const char *msg, u_int16_t len) {
+    auto Log = get("console");
+    Log->info("Client sending request of type {0:x}...", type);
+    header_t head;
+    head.proto_ori = PROTO_C2S;
+    head.proto_type = type;
+
+    head.len = len;
+    char *buffer = new char[HEADLEN + len];
+    memcpy(buffer, &head, HEADLEN);
+    memcpy(buffer + HEADLEN, msg, len);
+    client->SendPacket(buffer, HEADLEN + len);
+    delete[] buffer;
 }
 
 void send_m(string to, string msg) {
     auto Log = get("console");
     string from = m_id;
     Log->info("send message from {} to {}", from, to);
-    string buffer;
+    char *buffer = new char[65536];
+    bzero(buffer, 65536);
     string encripted;
     encripted += msg;
     encripted += " ";
     encripted += m->sig(msg);
 //    Log->debug("send_m/send buffer: {}", encripted);
     encrypt(encripted, m->groupKey);
-    buffer += from + " ";
-    buffer += to + " ";
-    buffer += encripted + " ";
-    send_req(PROTO_COMMU, buffer);
+    memcpy(buffer, from.c_str(), from.size() + 1);
+    memcpy(buffer + ID_LEN, to.c_str(), to.size() + 1);
+    memcpy(buffer + ID_LEN * 2, encripted.c_str(), encripted.size() + 1);
+    send_req(PROTO_COMMU, buffer, ID_LEN * 2 + encripted.size() + 1);
+    delete[] buffer;
 }
 
-void handle_m(const string &buf) {
+void handle_m(const char *buf) {
+    header_t *header = (header_t *) buf;
     auto Log = get("console");
-    string from;
-    string to;
-    string msg;
-    stringstream ss(buf);
-    ss >> from >> to >> msg;
+    char from[ID_LEN];
+    char to[ID_LEN];
+    memcpy(from, buf + HEADLEN, ID_LEN);
+    memcpy(to, buf + HEADLEN + ID_LEN, ID_LEN);
     Log->info("recv message from {} to {}", from, to);
-    decrypt(msg, m->groupKey);
+    int msg_len = header->len - 2 * ID_LEN;
+    char *msg = new char[msg_len];
+    memcpy(msg, buf + HEADLEN + 2 * ID_LEN, msg_len);
+    decrypt(msg, m->groupKey, msg_len);
     Log->debug("onRecv_mm/msg(decrypted): {}", msg);
     stringstream sss(msg);
     string mmp, sig;
-    sss >> mmp >> sig;
+//    sss >> mmp >> sig;
+    sss >> mmp;
+    getline(sss, sig);
+    Log->debug("onRecv/sig: {}", sig);
     if (!m->ver(mmp, sig)) {
         Log->error("msg verify error!");
     } else Log->info("msg verify passed!");
@@ -80,7 +104,6 @@ void onRecv_m(ClientData *data) {
     stringstream ss;
     NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
     Log->debug("recv raw packet:\n{}", ss.str());
-
 
 
     NEXT:
@@ -161,7 +184,7 @@ void onRecv_m(ClientData *data) {
             break;
         }
         case PROTO_COMMU: {
-            handle_m(get_str((char *) header));
+            handle_m(data->recv_playload);
             break;
         }
         default:
