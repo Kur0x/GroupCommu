@@ -8,6 +8,21 @@ extern int main_gm(string ip, u_int16_t port, ZZ psk);
 int main_m(string ip, u_int16_t port, string id, const ZZ &psk);
 
 int main(int argc, char *argv[]) {
+//    ZZ c = conv<ZZ>(12);
+//
+//    cout << IsZero((c >> 0) & 0x1) <<endl;
+//    cout << IsZero((c >> 1) & 0x1) <<endl;
+//    cout << IsZero((c >> 2) & 0x1) <<endl;
+//    return 0;
+
+
+//    ZZ aa,bb,nn;
+//
+//    RandomBits(nn, 65537);
+//    RandomBits(aa, 511);
+//    RandomBits(bb, 512);
+//    ZZ gg = PowerMod(aa,bb, (nn));
+//    return 0;
     // Console logger with color
     // usage https://github.com/gabime/spdlog
     auto Log = stdout_color_mt("console");

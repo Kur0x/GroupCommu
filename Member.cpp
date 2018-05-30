@@ -76,16 +76,16 @@ string member::sig(const ZZ &x) const {
         result += Cryptography::numberToString(v1.s[i], false);
     }
 
-    result += ' ';
-    result += Cryptography::numberToString(v2.c, false);
-    int2str(v2.cnt, cnt_str);
-    result += ' ';
-    result += cnt_str;
-    Log->debug("v2.cnt: {}", v2.cnt);
-    for (int i = 0; i < v2.cnt; i++) {
-        result += ' ';
-        result += Cryptography::numberToString(v2.s[i], false);
-    }
+//    result += ' ';
+//    result += Cryptography::numberToString(v2.c, false);
+//    int2str(v2.cnt, cnt_str);
+//    result += ' ';
+//    result += cnt_str;
+//    Log->debug("v2.cnt: {}", v2.cnt);
+//    for (int i = 0; i < v2.cnt; i++) {
+//        result += ' ';
+//        result += Cryptography::numberToString(v2.s[i], false);
+//    }
 
     Log->debug("msg after signing: {}", result);
 
@@ -117,14 +117,15 @@ bool member::ver(string msg, string sig) const {
         stream >> token;
         v1.s.push_back(Cryptography::stringToNumber(token, false));
     }
-    stream >> token;
-    v2.c = Cryptography::stringToNumber(token, false);
-    stream >> v2.cnt;
-    for (int i = 0; i < v2.cnt; i++) {
-        stream >> token;
-        v2.s.push_back(Cryptography::stringToNumber(token, false));
-    }
-    if (SKLOGLOGver(m, zz, gg, ax, para->a, v1) && SKROOTLOGver(m, zg, gg, para->b, v2)) {
+//    stream >> token;
+//    v2.c = Cryptography::stringToNumber(token, false);
+//    stream >> v2.cnt;
+//    for (int i = 0; i < v2.cnt; i++) {
+//        stream >> token;
+//        v2.s.push_back(Cryptography::stringToNumber(token, false));
+//    }
+//    if (SKLOGLOGver(m, zz, gg, ax, para->a, v1) && SKROOTLOGver(m, zg, gg, para->b, v2)) {
+    if (SKLOGLOGver(m, zz, gg, ax, para->a, v1)) {
         return true;
     }
     return false;
@@ -312,7 +313,6 @@ cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, con
         }
     }
 
-    SKROOTLOGver(m, y, g, e, p);
     return p;
 }
 
