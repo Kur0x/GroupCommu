@@ -78,9 +78,9 @@ void onRecv_gm(ClientData *data) {
     ZZ v;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
-            Log->info("GM recv public para request form {}", data->id);
             string id = get_str(data->recv_playload);
             data->id = id;
+            Log->info("GM recv public para request form {}", id);
             group_sig::public_para p = gm->getPublicPara();
             header_t head;
             head.proto_ori = PROTO_S2C;
