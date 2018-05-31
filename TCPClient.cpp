@@ -70,19 +70,21 @@ void TCPClient::tcp_block() {
             return;
         n = tcp_recv_server(cli_data->serverfd, cli_data->recv_playload + cli_data->recv_len,
                             ClientData::BUFFER_LEN - cli_data->recv_len);
-        cli_data->recv_len += n;
+        
         if (n == 0) {
             if (onFinCallBack != nullptr)
                 onFinCallBack(cli_data);
         }
-        if (n < 0) {
+        else if (n < 0) {
             if(errno == EINTR){
                 continue;
             }
             Log->critical("Receiving msg from server error");
             exit(0);
         }
-
+        else{
+            cli_data->recv_len += n;
+        }
 //        Log->info("Received msg from server");
         if (onRecvCallBack != nullptr) {
             onRecvCallBack(cli_data);
