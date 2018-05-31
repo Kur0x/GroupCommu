@@ -135,13 +135,12 @@ void GM::onKeyExchangeResponseRecv(string msg) {
 
 }
 
-// FIXME: size dont match
 string GM::getBroadcastMsg() {
     //广播消息的格式是id gn id gn id gn...
     stringstream broadcast_buf;
     auto it_i = info.rbegin();
-    if (keyChain.size() != info.size()) {
-        Log->debug("size dont match!!");
+    if (keyChain.size() != 1 && keyChain.size() != info.size() + 1) {
+        Log->critical("size don't match!!");
     }
     for (auto it = keyChain.begin(); it != keyChain.end() && it_i != info.rend(); ++it, ++it_i) {
         broadcast_buf << it_i->id << ' ';
