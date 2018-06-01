@@ -184,7 +184,7 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
 
 void TCPServer::Broadcast(const char *playload, size_t len) {
     Log->info("Broadcast");
-
+    Log->debug("Broadcast/payload: {}", playload);
     for (int i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].clientfd <= 0)
             continue;
@@ -209,7 +209,7 @@ void TCPServer::SendPacket(string id, const char *playload, size_t len) {
         if (client_fds[i].id == id)
             break;
     }
-    Log->debug("send packet to {}", id);
+//    Log->debug("sending packet to {}", id);
     if (client_fds[i].send_len + len > ClientData::BUFFER_LEN) {
         Log->critical("send buffer will overflow!");
         return;

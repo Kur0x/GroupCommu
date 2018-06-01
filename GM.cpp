@@ -33,7 +33,7 @@ void GM::init() {
     g = Cryptography::findPrimitiveRoot(G);
     n = rsa_n = G - 1;// 群的阶和rsa的n
     rsa_b = findRandomInZn(n);
-    rsa_a = InvMod(rsa_b, G);
+    rsa_a = InvMod(rsa_b, n);
 
     a = findRandomInZn(n);//TODO doesn't not know a's meaning
     epsilon = 5;
@@ -48,6 +48,7 @@ public_para GM::getPublicPara() const {
 }
 
 ZZ GM::verify(string id, string msg) {
+    Log->info("Verifying member identity...");
     cspair p;
     stringstream stream(msg);
     string token;
@@ -91,9 +92,11 @@ string GM::open(ZZ gg, ZZ zz) {
 
 
 bool GM::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const {
+    Log->info("SKLOGver");
     ZZ temp = MulMod(PowerMod(g, p.s[0], rsa_n), PowerMod(y, p.c, rsa_n), rsa_n);
-    Log->debug("c: {}\ns: {}", Cryptography::numberToString(p.c, false), Cryptography::numberToString(p.s[0], false));
-    Log->debug("g^r: {}", Cryptography::numberToString(temp, false));
+    Log->debug("SKLOGver/c: {}\ns: {}", Cryptography::numberToString(p.c, false),
+               Cryptography::numberToString(p.s[0], false));
+    Log->debug("SKLOGver/g^r: {}", Cryptography::numberToString(temp, false));
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                        Cryptography::numberToString(g, false) +
@@ -105,8 +108,8 @@ bool GM::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const 
     size_t n = h(concatStr);
 
     ZZ cc = conv<ZZ>(n);
-    Log->debug("cc: {}", Cryptography::numberToString(cc, false));
-    Log->debug("p.c: {}", Cryptography::numberToString(p.c, false));
+    Log->debug("SKLOGver/cc: {}", Cryptography::numberToString(cc, false));
+    Log->debug("SKLOGver/p.c: {}", Cryptography::numberToString(p.c, false));
     return cc == p.c != 0;
 }
 

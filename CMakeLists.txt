@@ -22,9 +22,6 @@ add_executable(GroupCommu main.cpp
         main.cpp
         Member.cpp
         Member.h
-        SHA512.cpp
-        SHA512.h
-        SK.cpp
         TCPClient.cpp
         TCPClient.h
         TCPServer.h

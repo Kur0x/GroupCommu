@@ -16,7 +16,7 @@ string hardware_id;//id，由命令行输入
 
 void send_r(const string &id, u_int8_t type, string msg = "") {
     auto Log = get("console");
-    Log->info("GM sending type {0:x} to {1}", type, id);
+//    Log->info("GM sending type {0:x} to {1}", type, id);
     header_t head{};
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
@@ -35,7 +35,7 @@ void send_r(const string &id, u_int8_t type, string msg = "") {
 
 void send_r(const string &id, u_int8_t type, const char *payload, u_int16_t len) {
     auto Log = get("console");
-    Log->info("GM sending type {0:x} to {1}", type, id);
+//    Log->info("GM sending type {0:x} to {1}", type, id);
     header_t head{};
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
@@ -56,7 +56,7 @@ void handle_commu(const char *buf) {
     char to[ID_LEN];
     memcpy(from, buf + HEADLEN, ID_LEN);
     memcpy(to, buf + HEADLEN + ID_LEN, ID_LEN);
-    Log->info("message from {} to {}", from, to);
+    Log->info("relaying message from {} to {}", from, to);
     send_r(to, PROTO_COMMU, buf + HEADLEN, ((header_t *) buf)->len);
 }
 
@@ -80,7 +80,7 @@ void onRecv_gm(ClientData *data) {
         case PROTO_PUB_PARA: {
             string id = get_str(data->recv_playload);
             data->id = id;
-            Log->info("GM recv public para request form {}", id);
+            Log->info("GM recv public para request from {}", id);
             group_sig::public_para p = gm->getPublicPara();
             header_t head;
             head.proto_ori = PROTO_S2C;
@@ -99,21 +99,23 @@ void onRecv_gm(ClientData *data) {
             char *buffer = new char[HEADLEN + head.len];
             memcpy(buffer, &head, HEADLEN);
             memcpy(buffer + HEADLEN, str.c_str(), head.len);
+            Log->info("GM sending public para to {}", id);
             server->SendPacket(data->id, buffer, HEADLEN + head.len);
             break;
         }
         case PROTO_JOIN_GROUP: {
-            Log->info("GM recv join group request form {}", data->id);
+            Log->info("GM recv join group request from {}", data->id);
             msg = get_str(data->recv_playload);
             v = gm->verify(data->id, msg);
             vv = Cryptography::numberToString(v, false);
+            Log->info("GM sending join group response to {}", data->id);
             send_r(data->id, PROTO_JOIN_GROUP, vv);
-            Log->debug("keychain: {}", gm->getKeyChain());
+            Log->info("GM sending key exchange request to {}", data->id);
             send_r(data->id, PROTO_KEY_EX, gm->getKeyChain());
             break;
         }
         case PROTO_KEY_EX: {
-            Log->info("GM recv key exchg msg form {}", data->id);
+            Log->info("GM recv key exchg msg from {}", data->id);
             msg = get_str(data->recv_playload);
             gm->onKeyExchangeResponseRecv(msg);
             msg = gm->getBroadcastMsg();
@@ -125,6 +127,7 @@ void onRecv_gm(ClientData *data) {
             char *buffer = new char[packet_len];
             memcpy(buffer, &head, HEADLEN);
             memcpy(buffer + HEADLEN, msg.c_str(), msg.size() + 1);
+            Log->info("GM broadcasting group key message...", data->id);
             server->Broadcast(buffer, packet_len);
             delete[] buffer;
             break;

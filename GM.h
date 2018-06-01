@@ -2,7 +2,6 @@
 #include "common.h"
 #include <MMX/RsaSignature.h>
 #include <vector>
-#include "SHA512.h"
 namespace group_sig
 {
 	struct member_info

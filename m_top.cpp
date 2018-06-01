@@ -22,7 +22,7 @@ char conf_type;
 
 void send_req(u_int8_t type, const string &msg = "") {
     auto Log = get("console");
-    Log->info("Client sending request of type {0:x}...", type);
+//    Log->info("Client sending request of type {0:x}...", type);
     header_t head;
     head.proto_ori = PROTO_C2S;
     head.proto_type = type;
@@ -41,7 +41,7 @@ void send_req(u_int8_t type, const string &msg = "") {
 
 void send_req(u_int8_t type, const char *msg, u_int16_t len) {
     auto Log = get("console");
-    Log->info("Client sending request of type {0:x}...", type);
+//    Log->info("Member sending request of type {0:x}...", type);
     header_t head;
     head.proto_ori = PROTO_C2S;
     head.proto_type = type;
@@ -109,13 +109,13 @@ void onRecv_m(ClientData *data) {
     NEXT:
     header = (header_t *) (data->recv_playload);
     if (header->len + HEADLEN > data->recv_len) {
-        Log->debug("half packet deceted!");
+        Log->debug("half packet detected!");
         data->half = true;
         return;
     } else data->half = false;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
-            Log->info("Client recv public para msg");
+            Log->info("Member recv public para msg");
 //		group_sig::public_para* p=new group_sig::public_para;
             char *p = new char[header->len + 1];
             memcpy(p, data->recv_playload + HEADLEN, header->len);
@@ -141,11 +141,12 @@ void onRecv_m(ClientData *data) {
             m = new group_sig::member(m_id, para, m_psk);
 
             //send PROTO_JOIN_GROUP
+            Log->info("member sending join group request...");
             send_req(PROTO_JOIN_GROUP, m->JoinGroupMsg(m_psk));
             break;
         }
         case PROTO_JOIN_GROUP: {
-            Log->info("Client recv join group msg v");
+            Log->info("Member recv join group response v");
             string msg = get_str((char *) header);
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
@@ -160,10 +161,11 @@ void onRecv_m(ClientData *data) {
             break;
         }
         case PROTO_KEY_EX: {
-            Log->info("Client recv key exchg msg");
+            Log->info("Client recv key exchg request");
             string msg = get_str((char *) header);
             Log->debug("PROTO_KEY_EX/msg: {}", msg);
             string ret = m->onKeyExchangeRequestRecv(msg);
+            Log->info("Member sending key exchg response...");
             send_req(PROTO_KEY_EX, ret);
             if (header->len + HEADLEN < data->recv_len) {
                 Log->debug("dup packet detected");
@@ -180,7 +182,7 @@ void onRecv_m(ClientData *data) {
             Log->info("Client recv broadcast msg");
             string msg = get_str((char *) header);
             m->onGroupKeyBoardcastRecv(msg);
-            Log->info("initial state done!");
+            Log->info("key exchange process done!");
             break;
         }
         case PROTO_COMMU: {
@@ -196,7 +198,7 @@ void onRecv_m(ClientData *data) {
 
 void onConnected(ClientData */*data*/) {
     auto Log = get("console");
-    Log->info("Client requesting public para msg...");
+    Log->info("client requesting public para msg...");
     send_req(PROTO_PUB_PARA, m_id);
 }
 

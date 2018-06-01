@@ -3,7 +3,6 @@
 #include "common.h"
 #include <vector>
 #include <sstream>
-#include "SHA512.h"
 
 
 namespace group_sig {
@@ -24,7 +23,7 @@ namespace group_sig {
 
         bool ver(std::string msg, std::string sig) const;
 
-        cspair SKLOG(const ZZ &m, const ZZ &y, const ZZ &g) const;
+        cspair SKLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &x) const;
 
         cspair SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const ZZ &alpha) const;
 
