@@ -145,10 +145,16 @@ string GM::getBroadcastMsg() {
     if (keyChain.size() != 1 && keyChain.size() != info.size() + 1) {
         Log->critical("size don't match!!");
     }
-    for (auto it = keyChain.begin(); it != keyChain.end() && it_i != info.rend(); ++it, ++it_i) {
+    if (keyChain.size() == 1) {
         broadcast_buf << it_i->id << ' ';
         broadcast_buf << Cryptography::numberToString(
-                PowerMod(*it % n, rsa_a, rsa_n), false) << ' ';
+                PowerMod(this->g, rsa_a, rsa_n), false);
+    } else {
+        for (auto it = keyChain.begin(); it != keyChain.end() && it_i != info.rend(); ++it, ++it_i) {
+            broadcast_buf << it_i->id << ' ';
+            broadcast_buf << Cryptography::numberToString(
+                    PowerMod(*it % n, rsa_a, rsa_n), false) << ' ';
+        }
     }
     Log->debug("broadcast: {}", broadcast_buf.str());
     return broadcast_buf.str();

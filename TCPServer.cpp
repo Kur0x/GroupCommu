@@ -183,8 +183,7 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
 }
 
 void TCPServer::Broadcast(const char *playload, size_t len) {
-    Log->info("Broadcast");
-    Log->debug("Broadcast/payload: {}", playload);
+//    Log->info("Broadcast");
     for (int i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].clientfd <= 0)
             continue;
