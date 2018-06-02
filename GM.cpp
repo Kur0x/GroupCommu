@@ -71,7 +71,7 @@ ZZ GM::verify(string id, string msg) {
     stream >> token;
     p.s.push_back(Cryptography::stringToNumber(token, false));
     if (!SKLOGver(psk, yy, aa, p)) {
-        Log->critical("Alice doesn't know x");
+        Log->critical("SKLOG verify failed!");
     }
 
     // GM保存(y, z)用于日后打开群签名
