@@ -24,14 +24,16 @@ string member::JoinGroupMsg(ZZ psk) {
     const ZZ m(psk);//知识签名总得签点啥//PSK
     cspair p = SKLOG(m, y, para->a, x);
     string result =
-            Cryptography::numberToString(y, false) + ' ' +
+//            Cryptography::numberToString(y, false) + ' ' +
             Cryptography::numberToString(para->a, false) + ' ' +
             Cryptography::numberToString(p.c, false) + ' ' +
             Cryptography::numberToString(p.s[0], false);
 
     stringstream ss;
-    ss << y << ' '
-       << z << ' '
+    ZZ _y = PowerMod(y, para->b, para->n);
+    ZZ _z = PowerMod(z, para->b, para->n);
+    ss << _y << ' '
+       << _z << ' '
        << result;
     // TODO encript with rsa_b
     Log->info("JoinGroupMsg/msg: {}", ss.str());

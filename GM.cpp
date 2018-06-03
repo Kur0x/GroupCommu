@@ -54,17 +54,20 @@ ZZ GM::verify(string id, string msg) {
     string token;
     stream >> token;
     // TODO decript with rsa_a
-    ZZ y = Cryptography::stringToNumber(token, false);
+    ZZ _y = Cryptography::stringToNumber(token, false);
+    ZZ y = PowerMod(_y, rsa_a, n);
     stream >> token;
-    ZZ z = Cryptography::stringToNumber(token, false);
+    ZZ _z = Cryptography::stringToNumber(token, false);
+    ZZ z = PowerMod(_z, rsa_a, n);
     // JoinGroupMsg y和z的合法性
     if (z != PowerMod(g, y, rsa_n)) {
         Log->critical("y,z inconsistent");
     }
 
     //验证Alice知道x
-    stream >> token;
-    ZZ yy = Cryptography::stringToNumber(token, false);
+//    stream >> token;
+//    ZZ yy = Cryptography::stringToNumber(token, false);
+    ZZ yy = y;
     stream >> token;
     ZZ aa = Cryptography::stringToNumber(token, false);
     stream >> token;
