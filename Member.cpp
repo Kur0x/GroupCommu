@@ -33,7 +33,7 @@ string member::JoinGroupMsg(ZZ psk) {
     ss << y << ' '
        << z << ' '
        << result;
-
+    // TODO encript with rsa_b
     Log->info("JoinGroupMsg/msg: {}", ss.str());
     return ss.str();
 }

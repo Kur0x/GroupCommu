@@ -53,6 +53,7 @@ ZZ GM::verify(string id, string msg) {
     stringstream stream(msg);
     string token;
     stream >> token;
+    // TODO decript with rsa_a
     ZZ y = Cryptography::stringToNumber(token, false);
     stream >> token;
     ZZ z = Cryptography::stringToNumber(token, false);

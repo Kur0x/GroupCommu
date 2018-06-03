@@ -65,10 +65,13 @@ void send_m(string to, string msg) {
     encripted += " ";
     encripted += m->sig(msg);
 //    Log->debug("send_m/send buffer: {}", encripted);
-    encrypt(encripted, m->groupKey);
+    char *_encripted = new char[encripted.size() + 1];
+    memcpy(_encripted, encripted.c_str(), encripted.size());
+    _encripted[encripted.size()] = '\0';
+    encrypt(_encripted, encripted.size(), m->groupKey);
     memcpy(buffer, from.c_str(), from.size() + 1);
     memcpy(buffer + ID_LEN, to.c_str(), to.size() + 1);
-    memcpy(buffer + ID_LEN * 2, encripted.c_str(), encripted.size() + 1);
+    memcpy(buffer + ID_LEN * 2, _encripted, encripted.size() + 1);
     send_req(PROTO_COMMU, buffer, ID_LEN * 2 + encripted.size() + 1);
     delete[] buffer;
 }
@@ -84,7 +87,7 @@ void handle_m(const char *buf) {
     int msg_len = header->len - 2 * ID_LEN;
     char *msg = new char[msg_len];
     memcpy(msg, buf + HEADLEN + 2 * ID_LEN, msg_len);
-    decrypt(msg, m->groupKey, msg_len);
+    decrypt(msg, msg_len, m->groupKey);
     Log->debug("onRecv_mm/msg(decrypted): {}", msg);
     stringstream sss(msg);
     string mmp, sig;

@@ -98,8 +98,6 @@ namespace group_sig {
 
 ZZ findRandomInZn(const ZZ &n);
 
-void encrypt(std::string &in, ZZ key);
+void encrypt(char *in, size_t len, ZZ key);
 
-void decrypt(std::string &in, ZZ key);
-
-void decrypt(char *in, ZZ key, int len);
+void decrypt(char *in, size_t len, ZZ key);
