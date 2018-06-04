@@ -26,7 +26,8 @@ add_executable(GroupCommu main.cpp
         TCPClient.h
         TCPServer.h
         TCPServer.cpp
-        murmur3.cpp murmur3.h common.cpp)
+        murmur3.cpp murmur3.h common.cpp
+        aes256.cpp include/aes256.hpp)
 add_custom_target(libmmx
         /usr/bin/make -C "${CMAKE_CURRENT_SOURCE_DIR}/lib/MMXlib/")
 target_link_libraries(GroupCommu gmp)

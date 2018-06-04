@@ -3,6 +3,7 @@
 #include <NTL/ZZ.h>
 #include "spdlog/spdlog.h"
 #include <functional>
+#include <aes256.hpp>
 #include "murmur3.h"
 
 using namespace NTL;
@@ -98,6 +99,10 @@ namespace group_sig {
 
 ZZ findRandomInZn(const ZZ &n);
 
-void encrypt(char *in, size_t len, ZZ key);
+ByteArray encrypt(const unsigned char *in, size_t len, ZZ key);
 
-void decrypt(char *in, size_t len, ZZ key);
+ByteArray encrypt(const ByteArray &in, ZZ key);
+
+ByteArray decrypt(const ByteArray &in, ZZ key);
+
+ByteArray decrypt(const unsigned char *in, size_t len, ZZ key);

@@ -238,17 +238,17 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, cons
     long l = RandomBnd(k - 1) + 1;
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-        Log->debug("SKLOGLOG/numbits of a: {}", NumBits(a));
+//        Log->debug("SKLOGLOG/numbits of a: {}", NumBits(a));
         r[i] = findRandInlamda(para->lambda, alpha);
-        Log->debug("SKLOGLOG/numbits of ri: {}", NumBits(r[i]));
+//        Log->debug("SKLOGLOG/numbits of ri: {}", NumBits(r[i]));
 
         ZZ ar = PowerMod(a, r[i], para->n);
 //        ZZ nn;
 //        RandomBits(nn, 65537);
 //        r[i] = PowerMod(a, r[i], nn);
-        Log->debug("SKLOGLOG/numbits of a^r: {}", NumBits(r[i]));
+//        Log->debug("SKLOGLOG/numbits of a^r: {}", NumBits(r[i]));
         t[i] = PowerMod(g % para->n, ar, para->n);
-        Log->debug("OK ti");
+//        Log->debug("OK ti");
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
