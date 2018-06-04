@@ -29,7 +29,7 @@ void GM::init() {
 //	prime factors of n_, and
 //	_ an upper bound _ on the length of the secret keys and a constant _ _ 1
 //	_these parameters are required for the SKLOGLOG signatures_
-    G = Cryptography::findPrime(512);
+    G = Cryptography::findPrime(lambda << 2);
     g = Cryptography::findPrimitiveRoot(G);
     n = rsa_n = G - 1;// 群的阶和rsa的n
     rsa_b = findRandomInZn(n);
