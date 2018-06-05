@@ -11,15 +11,15 @@ int main(int argc, char *argv[]) {
     // Console logger with color
     // usage https://github.com/gabime/spdlog
     auto Log = stdout_color_mt("console");
-    set_level(level::debug);
     Log->info("Program started");
 
     int oc;                     /*选项字符 */
     char *ip = nullptr;
     char *name = nullptr;
-    char *t = nullptr;
+    char *p = nullptr;
+    string log_level;
     bool type = false;
-    while ((oc = getopt(argc, argv, "gmint:")) != -1) {
+    while ((oc = getopt(argc, argv, "gminpl:")) != -1) {
         switch (oc) {
             case 'g':
                 type = true;
@@ -33,17 +33,32 @@ int main(int argc, char *argv[]) {
             case 'n':
                 name = optarg;
                 break;
-            case 't':
-                t = optarg;
+            case 'p':
+                p = optarg;
+                break;
+            case 'l':
+                log_level = optarg;
                 break;
             default:
                 break;
         }
     }
+    set_level(level::debug);
+    if (log_level == "debug")
+        set_level(level::debug);
+    if (log_level == "info")
+        set_level(level::info);
+    if (log_level == "warn")
+        set_level(level::warn);
+    if (log_level == "err")
+        set_level(level::err);
+    if (log_level == "critical")
+        set_level(level::critical);
+
     if (type) {//GM
-        main_gm("0.0.0.0", 9999, conv<ZZ>(233333), 64);
+        main_gm("0.0.0.0", 9999, conv<ZZ>(p), 64);
     } else {
-        main_m(ip, 9999, name, conv<ZZ>(233333));
+        main_m(ip, 9999, name, conv<ZZ>(p));
     }
     return 0;
 }
