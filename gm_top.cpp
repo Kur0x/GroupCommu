@@ -150,7 +150,6 @@ int main_gm(string ip, u_int16_t port, const ZZ &psk, int lambda = 64) {
     gm = new group_sig::GM(lambda, psk);
     server = new TCPServer(inet_addr(ip.c_str()), port);
     server->setOnRecvCallBack(onRecv_gm);
-    exit(2333);
     server->StartServer();
     return 0;
 }

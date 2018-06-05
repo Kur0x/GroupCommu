@@ -16,10 +16,10 @@ int main(int argc, char *argv[]) {
     int oc;                     /*选项字符 */
     char *ip = nullptr;
     char *name = nullptr;
-    char *p = nullptr;
+    string psk = "";
     string log_level;
     bool type = false;
-    while ((oc = getopt(argc, argv, "gminpl:")) != -1) {
+    while ((oc = getopt(argc, argv, "gmhi:n:p:l:")) != -1) {
         switch (oc) {
             case 'g':
                 type = true;
@@ -34,14 +34,22 @@ int main(int argc, char *argv[]) {
                 name = optarg;
                 break;
             case 'p':
-                p = optarg;
+                psk = optarg;
                 break;
             case 'l':
                 log_level = optarg;
                 break;
+            case 'h':
+                cout << "usage: {-h|-m} [-i <ip>] [-n <id>] -p <PSK> [-l <log_level>]" << endl;
+                return 0;
             default:
+                cout << "usage: {-h|-m} [-i <ip>] [-n <id>] -p <PSK> [-l <log_level>]" << endl;
                 break;
         }
+    }
+    if (psk == "") {
+        Log->critical("Wrong usage: no psk");
+        return -1;
     }
     set_level(level::debug);
     if (log_level == "debug")
@@ -55,10 +63,19 @@ int main(int argc, char *argv[]) {
     if (log_level == "critical")
         set_level(level::critical);
 
+    ZZ _psk = conv<ZZ>(atoi(psk.c_str()));
     if (type) {//GM
-        main_gm("0.0.0.0", 9999, conv<ZZ>(p), 64);
+        main_gm("0.0.0.0", 9999, _psk, 64);
     } else {
-        main_m(ip, 9999, name, conv<ZZ>(p));
+        if (!ip) {
+            Log->critical("Wrong usage: no ip");
+            return -1;
+        }
+        if (!name) {
+            Log->critical("Wrong usage: no id");
+            return -1;
+        }
+        main_m(ip, 9999, name, _psk);
     }
     return 0;
 }
