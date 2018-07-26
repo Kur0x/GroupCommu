@@ -30,8 +30,10 @@ string member::JoinGroupMsg(ZZ psk) {
             Cryptography::numberToString(p.s[0], false);
 
     stringstream ss;
-    ZZ _y = PowerMod(y, para->b, para->n);
-    ZZ _z = PowerMod(z, para->b, para->n);
+    ZZ _y = y + psk;
+    ZZ _z = z + psk;
+    // ZZ _y = PowerMod(y, para->b, para->n);
+    // ZZ _z = PowerMod(z, para->b, para->n);
     ss << _y << ' '
        << _z << ' '
        << result;
