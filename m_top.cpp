@@ -21,8 +21,7 @@ ZZ m_psk;//id，由命令行输入
 char conf_type;
 
 void send_req(u_int8_t type, const string &msg = "") {
-    auto Log = get("console");
-//    Log->info("Client sending request of type {0:x}...", type);
+//    INFO("Client sending request of type {0:x}...", type);
     header_t head;
     head.proto_ori = PROTO_C2S;
     head.proto_type = type;
@@ -40,8 +39,7 @@ void send_req(u_int8_t type, const string &msg = "") {
 }
 
 void send_req(u_int8_t type, const char *msg, u_int16_t len) {
-    auto Log = get("console");
-//    Log->info("Member sending request of type {0:x}...", type);
+//    INFO("Member sending request of type {0:x}...", type);
     header_t head;
     head.proto_ori = PROTO_C2S;
     head.proto_type = type;
@@ -55,9 +53,8 @@ void send_req(u_int8_t type, const char *msg, u_int16_t len) {
 }
 
 void send_m(string to, string msg) {
-    auto Log = get("console");
     string from = m_id;
-    Log->info("send message from {} to {}", from, to);
+    INFO("send message from {} to {}", from, to);
     char *buffer = new char[65536];
     bzero(buffer, 65536);
     string encripted;
@@ -93,7 +90,7 @@ void handle_m(const char *buf) {
     char to[ID_LEN];
     memcpy(from, buf + HEADLEN, ID_LEN);
     memcpy(to, buf + HEADLEN + ID_LEN, ID_LEN);
-    Log->info("recv message from {} to {}", from, to);
+    INFO("recv message from {} to {}", from, to);
     int msg_len = header->len - 2 * ID_LEN;
     char *msg = new char[msg_len];
     memcpy(msg, buf + HEADLEN + 2 * ID_LEN, msg_len);
@@ -110,28 +107,29 @@ void handle_m(const char *buf) {
     Log->debug("onRecv/sig: {}", sig);
     if (!m->ver(mmp, sig)) {
         Log->error("msg verify error!");
-    } else Log->info("msg verify passed!");
+    } else
+        INFO("msg verify passed!");
 }
 
 
 void onRecv_m(ClientData *data) {
-    auto Log = get("console");
+
     header_t *header;
     stringstream ss;
     NetworkUtility::print_payload(ss, (const u_char *) data->recv_playload, data->recv_len);
-    Log->debug("recv raw packet:\n{}", ss.str());
+    DEBUG("recv raw packet:\n{}", ss.str());
 
 
     NEXT:
     header = (header_t *) (data->recv_playload);
     if (header->len + HEADLEN > data->recv_len) {
-        Log->debug("half packet detected!");
+        DEBUG("half packet detected! {} {}", header->len + HEADLEN, data->recv_len);
         data->half = true;
         return;
     } else data->half = false;
     switch (header->proto_type) {
         case PROTO_PUB_PARA: {
-            Log->info("Member recv public para msg");
+            INFO("Member recv public para msg");
 //		group_sig::public_para* p=new group_sig::public_para;
             char *p = new char[header->len + 1];
             memcpy(p, data->recv_playload + HEADLEN, header->len);
@@ -157,16 +155,16 @@ void onRecv_m(ClientData *data) {
             m = new group_sig::member(m_id, para, m_psk);
 
             //send PROTO_JOIN_GROUP
-            Log->info("member sending join group request...");
+            INFO("member sending join group request...");
             send_req(PROTO_JOIN_GROUP, m->JoinGroupMsg(m_psk));
             break;
         }
         case PROTO_JOIN_GROUP: {
-            Log->info("Member recv join group response v");
+            INFO("Member recv join group response v");
             string msg = get_str((char *) header);
             m->onRecvV(msg);
             if (header->len + HEADLEN < data->recv_len) {
-                Log->debug("dup packet detected");
+                DEBUG("dup packet detected");
                 char *buffer = new char[8192];
                 int packet1_len = header->len + HEADLEN;
                 memcpy(buffer, (char *) header + packet1_len, data->recv_len - packet1_len);
@@ -177,14 +175,14 @@ void onRecv_m(ClientData *data) {
             break;
         }
         case PROTO_KEY_EX: {
-            Log->info("Client recv key exchg request");
+            INFO("Client recv key exchg request");
             string msg = get_str((char *) header);
-            Log->debug("PROTO_KEY_EX/msg: {}", msg);
+            DEBUG("PROTO_KEY_EX/msg: {}", msg);
             string ret = m->onKeyExchangeRequestRecv(msg);
-            Log->info("Member sending key exchg response...");
+            INFO("Member sending key exchg response...");
             send_req(PROTO_KEY_EX, ret);
             if (header->len + HEADLEN < data->recv_len) {
-                Log->debug("dup packet detected");
+                DEBUG("dup packet detected");
                 char *buffer = new char[8192];
                 int packet1_len = header->len + HEADLEN;
                 memcpy(buffer, (char *) header + packet1_len, data->recv_len - packet1_len);
@@ -195,10 +193,10 @@ void onRecv_m(ClientData *data) {
             break;
         }
         case PROTO_KEY_BROADCAST: {
-            Log->info("Client recv broadcast msg");
+            INFO("Client recv broadcast msg");
             string msg = get_str((char *) header);
             m->onGroupKeyBoardcastRecv(msg);
-            Log->info("key exchange process done!");
+            INFO("key exchange process done!");
 #ifdef TEST_S
             if (m_id == "Bob")
                 send_m("Alice", "abcdefg");
@@ -210,7 +208,7 @@ void onRecv_m(ClientData *data) {
             break;
         }
         default:
-            Log->critical("unknown type: {0:x}", header->proto_type);
+            CRITICAL("unknown type: {0:x}", header->proto_type);
             break;
     }
     data->recv_len = 0;
@@ -218,14 +216,15 @@ void onRecv_m(ClientData *data) {
 
 void onConnected(ClientData */*data*/) {
     auto Log = get("console");
-    Log->info("client requesting public para msg...");
+    INFO("client requesting public para msg...");
     send_req(PROTO_PUB_PARA, m_id);
 }
 
 void onFin(ClientData */*data*/) {
-    auto Log = get("console");
-    Log->info("Connection fin!");
-    exit(0);
+    INFO("Connection fin!");
+
+
+//    exit(0);
 }
 
 void sigroutine(int dunno) { /* 信号处理例程，其中dunno将会得到信号的值 */
@@ -239,23 +238,23 @@ void sigroutine(int dunno) { /* 信号处理例程，其中dunno将会得到信�
 }
 
 int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
-#ifndef __APPLE__
+//#ifndef __APPLE__
     struct sigaction act, oact;
     act.sa_handler = sigroutine;
     sigemptyset(&act.sa_mask);
-    act.sa_flags = 0 | SA_INTERRUPT;
-
+    act.sa_flags = 0;
     sigaction(SIGTSTP, &act, &oact);
-#endif
+//#endif
+
     m_id = id;
     m_psk = psk;
-    auto Log = get("console");
-    Log->info("starting member connecting " + ip);
+    INFO("starting member connecting " + ip);
     client = new TCPClient(inet_addr(ip.c_str()), port);
     client->setOnConnectedCallBack(onConnected);
     client->setOnRecvCallBack(onRecv_m);
     client->setOnFinCallBack(onFin);
     client->ConnectServer();
+    INFO("st!!!!!!!!!!!!!!!! ");
 
     return 0;
 }

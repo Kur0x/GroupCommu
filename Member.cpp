@@ -157,23 +157,26 @@ string member::onKeyExchangeRequestRecv(string msg) const {
 
 void member::onGroupKeyBoardcastRecv(string msg) {
     stringstream stream(msg);
-    Log->debug("onGroupKeyBoardcastRecv/msg: {}", msg);
-    string id, gn;
-    while (stream >> id >> gn) {
+    DEBUG("onGroupKeyBoardcastRecv/msg: {}", msg);
+    string id, gn, ip;
+    bool not_found = true;
+    while (stream >> id >> gn >> ip) {
+        client_map[id] = ip;
 //        Log->debug("id: {}", id);
 //        Log->debug("gn: {}", gn);
         if (id == this->id) {
             groupKey = PowerMod(Cryptography::stringToNumber(gn, false) % para->n, x, para->n);
-            Log->debug("Group key update: {}", Cryptography::numberToString(groupKey, false));
-            return;
+            DEBUG("Group key update: {}", Cryptography::numberToString(groupKey, false));
+            not_found = false;
         }
     }
-    Log->error("No Group key!!!");
+    if (not_found)
+        ERROR("No Group key!!!");
 }
 
 
 cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &x) const {
-    Log->info("SKLOG");
+    INFO("SKLOG");
 //	unsigned long r = RandomWord();
     ZZ r;
     cspair p;
@@ -274,6 +277,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, cons
 
     return p;
 }
+
 cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const ZZ &beta) const {
     Log->debug("SKROOTLOG");
     cspair p;

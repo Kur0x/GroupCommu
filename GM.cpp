@@ -1,6 +1,6 @@
 ﻿#include <sstream>
 #include "GM.h"
-
+#include <map>
 using namespace group_sig;
 
 /**
@@ -19,7 +19,6 @@ using namespace group_sig;
 
 
 void GM::init() {
-    Log = get("console");
 //	_ an RSA public key _n;e_,
 //			_ a cyclic group G = hgi of order n in which computing discrete logarithms is
 //	infeasible _e.g. G could be a subgroup of Z _ , for a prime p with nj_p , 1__,
@@ -48,7 +47,7 @@ public_para GM::getPublicPara() const {
 }
 
 ZZ GM::verify(string id, string msg) {
-    Log->info("Verifying member identity...");
+    INFO("Verifying member identity...");
     cspair p;
     stringstream stream(msg);
     string token;
@@ -61,7 +60,7 @@ ZZ GM::verify(string id, string msg) {
     ZZ z = PowerMod(_z, rsa_a, n);
     // JoinGroupMsg y和z的合法性
     if (z != PowerMod(g, y, rsa_n)) {
-        Log->critical("y,z inconsistent");
+        CRITICAL("y,z inconsistent");
     }
 
     //验证Alice知道x
@@ -75,7 +74,7 @@ ZZ GM::verify(string id, string msg) {
     stream >> token;
     p.s.push_back(Cryptography::stringToNumber(token, false));
     if (!SKLOGver(psk, yy, aa, p)) {
-        Log->critical("SKLOG verify failed!");
+        CRITICAL("SKLOG verify failed!");
     }
 
     // GM保存(y, z)用于日后打开群签名
@@ -96,24 +95,24 @@ string GM::open(ZZ gg, ZZ zz) {
 
 
 bool GM::SKLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const cspair &p) const {
-    Log->info("SKLOGver");
+    INFO("SKLOGver");
     ZZ temp = MulMod(PowerMod(g, p.s[0], rsa_n), PowerMod(y, p.c, rsa_n), rsa_n);
-    Log->debug("SKLOGver/c: {}\ns: {}", Cryptography::numberToString(p.c, false),
-               Cryptography::numberToString(p.s[0], false));
-    Log->debug("SKLOGver/g^r: {}", Cryptography::numberToString(temp, false));
+    DEBUG("SKLOGver/c: {}\ns: {}", Cryptography::numberToString(p.c, false),
+          Cryptography::numberToString(p.s[0], false));
+    DEBUG("SKLOGver/g^r: {}", Cryptography::numberToString(temp, false));
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                        Cryptography::numberToString(g, false) +
                        Cryptography::numberToString(temp, false);
-    Log->debug("SKLOGver\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
-               Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
+    DEBUG("SKLOGver\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
+          Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 
 
     size_t n = h(concatStr);
 
     ZZ cc = conv<ZZ>(n);
-    Log->debug("SKLOGver/cc: {}", Cryptography::numberToString(cc, false));
-    Log->debug("SKLOGver/p.c: {}", Cryptography::numberToString(p.c, false));
+    DEBUG("SKLOGver/cc: {}", Cryptography::numberToString(cc, false));
+    DEBUG("SKLOGver/p.c: {}", Cryptography::numberToString(p.c, false));
     return cc == p.c != 0;
 }
 
@@ -127,7 +126,7 @@ string GM::getKeyChain() {
 }
 
 void GM::onKeyExchangeResponseRecv(string msg) {
-    Log->debug("onKeyExchangeResponseRecv/msg: {}", msg);
+    DEBUG("onKeyExchangeResponseRecv/msg: {}", msg);
     istringstream stream(msg);
     vector<ZZ> gn_buffer;
     string tmp;
@@ -138,28 +137,30 @@ void GM::onKeyExchangeResponseRecv(string msg) {
 
     //set groupKey
     groupKey = PowerMod(*keyChain.rbegin(), rsa_a, rsa_n);
-    Log->info("Group key update: {}", Cryptography::numberToString(groupKey, false));
+    INFO("Group key update: {}", Cryptography::numberToString(groupKey, false));
 
 }
 
 string GM::getBroadcastMsg() {
-    //广播消息的格式是id gn id gn id gn...
+    //广播消息的格式是<id gn ip> id gn ip id gn ip...
     stringstream broadcast_buf;
     auto it_i = info.rbegin();
     if (keyChain.size() != 1 && keyChain.size() != info.size() + 1) {
-        Log->critical("size don't match!!");
+        CRITICAL("size don't match!!");
     }
     if (keyChain.size() == 1) {
         broadcast_buf << it_i->id << ' ';
         broadcast_buf << Cryptography::numberToString(
-                PowerMod(this->g, rsa_a, rsa_n), false);
+                PowerMod(this->g, rsa_a, rsa_n), false) << ' ';
+        broadcast_buf << client_map[it_i->id] << ' ';
     } else {
         for (auto it = keyChain.begin(); it != keyChain.end() && it_i != info.rend(); ++it, ++it_i) {
             broadcast_buf << it_i->id << ' ';
             broadcast_buf << Cryptography::numberToString(
                     PowerMod(*it % n, rsa_a, rsa_n), false) << ' ';
+            broadcast_buf << client_map[it_i->id] << ' ';
         }
     }
-    Log->debug("broadcast: {}", broadcast_buf.str());
+    DEBUG("broadcast: {}", broadcast_buf.str());
     return broadcast_buf.str();
 }

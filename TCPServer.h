@@ -46,7 +46,6 @@ private:
     struct sockaddr_in serv_addr;
     int server_sockfd;
     ClientData client_fds[CLIENT_MAX];
-    std::shared_ptr<logger> Log;
 
     //ClientData* cli_data;
 

@@ -8,8 +8,7 @@
 
 TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
 
-    auto Log = get("console");
-    Log->info("starting TCP client");
+    INFO("starting TCP client");
     cli_data = new ClientData;
     cli_data->stat = ClientData::TO_SEND;
     cli_data->send_len = 0;
@@ -25,8 +24,7 @@ TCPClient::TCPClient(u_int32_t ip, uint16_t port) : portno(port), ip(ip) {
 
 
 void TCPClient::ConnectServer() {
-    auto Log = get("console");
-    Log->info("Client start connecting server...");
+    INFO("Client start connecting server...");
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = ip;
@@ -36,15 +34,19 @@ void TCPClient::ConnectServer() {
     cli_data->serverfd = socket(AF_INET, SOCK_STREAM, 0);
     cli_data->start_time = time(NULL);
     if (cli_data->serverfd < 0) {
-        Log->critical("ERROR opening socket");
+        CRITICAL("ERROR opening socket");
         exit(-1);
     }
     int n = connect(cli_data->serverfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-    if (n < 0) {
-        Log->critical("Connect error!");
-        exit(-1);
+    int t = 10;
+    while (n < 0) {
+        WARN("Connect error!");
+        sleep(1);
+        n = connect(cli_data->serverfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+        if (--t < 0)
+            exit(-1);
     }
-    Log->info("Connected to Server");
+    INFO("Connected to Server");
 
     if (onConnectedCallBack != nullptr) {
         onConnectedCallBack(cli_data);
@@ -54,14 +56,13 @@ void TCPClient::ConnectServer() {
 }
 
 void TCPClient::tcp_block() {
-    auto Log = get("console");
     int n;
     while (true) {
         if (cli_data->stat == ClientData::TO_SEND) {
 //            Log->info("sending msg to server");
             n = tcp_send_server(cli_data->serverfd, cli_data->send_playload, cli_data->send_len);
             if (n < 0) {
-                get("console")->critical("ERROR send");
+                CRITICAL("ERROR send");
                 exit(0);
             }
             cli_data->send_len = 0;
@@ -70,19 +71,19 @@ void TCPClient::tcp_block() {
             return;
         n = tcp_recv_server(cli_data->serverfd, cli_data->recv_playload + cli_data->recv_len,
                             ClientData::BUFFER_LEN - cli_data->recv_len);
-        
+
         if (n == 0) {
-            if (onFinCallBack != nullptr)
+            if (onFinCallBack != nullptr) {
                 onFinCallBack(cli_data);
-        }
-        else if (n < 0) {
-            if(errno == EINTR){
+                return;
+            }
+        } else if (n < 0) {
+            if (errno == EINTR) {
                 continue;
             }
-            Log->critical("Receiving msg from server error");
+            CRITICAL("Receiving msg from server error");
             exit(0);
-        }
-        else{
+        } else {
             cli_data->recv_len += n;
         }
 //        Log->info("Received msg from server");
@@ -102,10 +103,9 @@ int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
     }
 
     do {
-        auto Log = get("console");
         stringstream ss;
         NetworkUtility::print_payload(ss, (const u_char *) data, len);
-        Log->debug("client send raw packet:\n{}", ss.str());
+        DEBUG("client send raw packet:\n{}", ss.str());
         ret = send(serverfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
     get("console")->debug("send return:{}", ret);
@@ -115,12 +115,12 @@ int TCPClient::tcp_send_server(int serverfd, const char *data, size_t len) {
 
 int TCPClient::tcp_recv_server(int clifd, char *data, size_t len) {
     if (!data) {
-        get("console")->debug("recv_playload is null");
+        DEBUG("recv_playload is null");
         return -1;
     }
 
     int ret = recv(clifd, data, len, 0);
-    get("console")->debug("read return:{}", ret);
+    DEBUG("read return:{}", ret);
     return ret;
 }
 

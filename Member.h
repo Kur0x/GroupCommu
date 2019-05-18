@@ -3,7 +3,7 @@
 #include "common.h"
 #include <vector>
 #include <sstream>
-
+#include <map>
 
 namespace group_sig {
 
@@ -50,6 +50,7 @@ namespace group_sig {
         public_para *para;
 
         ZZ psk;
+        std::map<std::string, std::string> client_map;
 
     };
 

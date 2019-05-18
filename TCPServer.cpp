@@ -2,8 +2,7 @@
 
 
 TCPServer::TCPServer(u_int32_t ip, uint16_t port) : ip(ip), portno(port) {
-    Log = get("console");
-    Log->info("Initializing TCP server");
+    INFO("Initializing TCP server");
     bzero(client_fds, CLIENT_MAX * sizeof(ClientData));
     onRecvCallBack = nullptr;
     onAcceptCallBack = nullptr;
@@ -14,8 +13,7 @@ TCPServer::~TCPServer() {
 }
 
 void TCPServer::StartServer() {
-    auto Log = get("console");
-    Log->info("Starting server {}", portno);
+    INFO("Starting server {}", portno);
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = ip;
@@ -64,7 +62,7 @@ void TCPServer::StartServer() {
     struct sockaddr_in client_addr;
     socklen_t length = sizeof(client_addr);
 
-    while (1) {
+    while (true) {
         int i;
         fd_set rfds, wfds;
         int retval1;
@@ -97,7 +95,7 @@ void TCPServer::StartServer() {
                             client_fds[i].recv_playload = new char[ClientData::BUFFER_LEN];
                             client_fds[i].send_playload = new char[ClientData::BUFFER_LEN];
                             client_fds[i].stat = ClientData::TO_RECV;
-                            Log->info("client connected: {}", i);
+                            INFO("client connected: {}", i);
                             if (onAcceptCallBack != nullptr)
                                 onAcceptCallBack(&client_fds[i]);
                             break;
@@ -126,7 +124,7 @@ void TCPServer::StartServer() {
                                                   client_fds[i].recv_playload + client_fds[i].recv_len,
                                                   ClientData::BUFFER_LEN - client_fds[i].recv_len);
                         if (ret == 0) {
-                            Log->info("A client disconnected!");
+                            INFO("A client disconnected!");
                             delete client_fds[i].send_playload;
                             delete client_fds[i].recv_playload;
                             bzero(&client_fds[i], sizeof(client_fds[i]));
@@ -150,12 +148,16 @@ void TCPServer::StartServer() {
                             perror("send");
                             exit(1);
                         } else if (ret == 0) {
-                            Log->info("A client disconnected!");
+                            INFO("A client disconnected!");
                             bzero(&client_fds[i], sizeof(client_fds[i]));
                         }
 
                     }
             }
+
+        // self kill
+        if (getppid() == 1)
+            exit(-1);
     }
 
 
@@ -164,14 +166,14 @@ void TCPServer::StartServer() {
 int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
     int ret;
     if (len <= 0) {
-        Log->debug("invalid send recv_len");
+        DEBUG("invalid send recv_len");
         return -1;
     }
 
     do {
         ret = send(clientfd, data, len, 0);
     } while (ret < 0 && errno == EINTR);
-    Log->debug("send return:{}", ret);
+    DEBUG("send return:{}", ret);
 
     int i;
     for (i = 0; i < CLIENT_MAX; i++) {
@@ -183,7 +185,6 @@ int TCPServer::tcp_send_server(int clientfd, const char *data, size_t len) {
 }
 
 void TCPServer::Broadcast(const char *playload, size_t len) {
-//    Log->info("Broadcast");
     for (int i = 0; i < CLIENT_MAX; i++) {
         if (client_fds[i].clientfd <= 0)
             continue;
@@ -194,11 +195,11 @@ void TCPServer::Broadcast(const char *playload, size_t len) {
 
 int TCPServer::tcp_recv_server(int clifd, char *data, size_t len) {
     if (!data) {
-        Log->error("Null payload recved from client");
+        ERROR("Null payload recved from client");
         return -1;
     }
     int ret = recv(clifd, data, len, 0);
-    Log->debug("read return:{}", ret);
+    DEBUG("read return:{}", ret);
     return ret;
 }
 
@@ -210,7 +211,7 @@ void TCPServer::SendPacket(string id, const char *playload, size_t len) {
     }
 //    Log->debug("sending packet to {}", id);
     if (client_fds[i].send_len + len > ClientData::BUFFER_LEN) {
-        Log->critical("send buffer will overflow!");
+        CRITICAL("send buffer will overflow!");
         return;
     }
     memcpy(client_fds[i].send_playload + client_fds[i].send_len, playload, len);

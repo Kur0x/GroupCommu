@@ -8,6 +8,13 @@
 
 using namespace NTL;
 using namespace spdlog;
+extern std::string LOGNAME;
+#define DEBUG(args...) spdlog::get(LOGNAME)->debug(args)
+#define INFO(args...) spdlog::get(LOGNAME)->info(args)
+#define WARN(args...) spdlog::get(LOGNAME)->warn(args)
+#define ERROR(args...) spdlog::get(LOGNAME)->error(args)
+#define CRITICAL(args...) spdlog::get(LOGNAME)->critical(args)
+
 //PROTOCOL
 #define PROTO_C2S 0x00
 #define PROTO_S2C 0x01
