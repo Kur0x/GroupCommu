@@ -12,7 +12,6 @@ void int2str(const int &i, string &str) {
 member::member(string id, public_para *para, ZZ psk)
         : id(id), psk(psk) {
     this->para = para;
-    Log = get("console");
     RandomBits(x, para->lambda);
     y = PowerMod(para->a, x, para->n);
     z = PowerMod(para->g, y, para->n);
@@ -30,13 +29,15 @@ string member::JoinGroupMsg(ZZ psk) {
             Cryptography::numberToString(p.s[0], false);
 
     stringstream ss;
-    ZZ _y = PowerMod(y, para->b, para->n);
-    ZZ _z = PowerMod(z, para->b, para->n);
+    ZZ _y = y + psk;//fix bug.
+    ZZ _z = z + psk;//fix bug.
+    // ZZ _y = PowerMod(y, para->b, para->n);
+    // ZZ _z = PowerMod(z, para->b, para->n);
     ss << _y << ' '
        << _z << ' '
        << result;
     // TODO encript with rsa_b
-    Log->info("JoinGroupMsg/msg: {}", ss.str());
+    INFO("JoinGroupMsg/msg: {}", ss.str());
     return ss.str();
 }
 
@@ -47,7 +48,7 @@ bool member::onRecvV(string msg) {
 
 //x是待签名的消息
 string member::sig(const ZZ &x) const {
-    Log->info("signing...");
+    INFO("signing...");
     ZZ r = findRandomInZn(para->n);
     ZZ gg = PowerMod(para->g, r, para->n);
     ZZ zz = PowerMod(gg, y, para->n);
@@ -73,13 +74,13 @@ string member::sig(const ZZ &x) const {
 //    int2str(v2.cnt, cnt_str);
 //    result += ' ';
 //    result += cnt_str;
-//    Log->debug("v2.cnt: {}", v2.cnt);
+//    DEBUG("v2.cnt: {}", v2.cnt);
 //    for (int i = 0; i < v2.cnt; i++) {
 //        result += ' ';
 //        result += Cryptography::numberToString(v2.s[i], false);
 //    }
 
-    Log->debug("msg signature: {}", result);
+    DEBUG("msg signature: {}", result);
 
 //    SKLOGLOGver(x, zz, gg, this->y, para->a, v1);
     return result;
@@ -90,7 +91,7 @@ string member::sig(const string &x) const {
 }
 
 bool member::ver(string msg, string sig) const {
-    Log->info("verifying msg...");
+    INFO("verifying msg...");
     ZZ m = Cryptography::stringToNumber(msg);
     stringstream stream(sig);
     string token;
@@ -127,7 +128,7 @@ bool member::ver(string msg, string sig) const {
 //传输的消息的格式是 gn gn gn...
 string member::onKeyExchangeRequestRecv(string msg) const {
     stringstream stream(msg);
-    Log->debug("onKeyExchangeRequestRecv/msg: {}", msg);
+    DEBUG("onKeyExchangeRequestRecv/msg: {}", msg);
     vector<ZZ> gn_buffer;
 
     string gn_str;
@@ -162,8 +163,8 @@ void member::onGroupKeyBoardcastRecv(string msg) {
     bool not_found = true;
     while (stream >> id >> gn >> ip) {
         client_map[id] = ip;
-//        Log->debug("id: {}", id);
-//        Log->debug("gn: {}", gn);
+//        DEBUG("id: {}", id);
+//        DEBUG("gn: {}", gn);
         if (id == this->id) {
             groupKey = PowerMod(Cryptography::stringToNumber(gn, false) % para->n, x, para->n);
             DEBUG("Group key update: {}", Cryptography::numberToString(groupKey, false));
@@ -186,12 +187,12 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &x) const {
 
     fucked:
     r = findRandomInZn(para->n);
-    Log->debug("SKLOG/r: {}", Cryptography::numberToString(r, false));
+    DEBUG("SKLOG/r: {}", Cryptography::numberToString(r, false));
     concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
                 Cryptography::numberToString(g, false) +
                 Cryptography::numberToString(PowerMod(g, r % para->n, para->n), false);
-    Log->debug("SKLOG/g^r: {}", Cryptography::numberToString(PowerMod(g, r % para->n, para->n), false));
-    Log->debug("SKLOG/\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
+    DEBUG("SKLOG/g^r: {}", Cryptography::numberToString(PowerMod(g, r % para->n, para->n), false));
+    DEBUG("SKLOG/\nm: {}\ny: {}\ng: {}", Cryptography::numberToString(m, false),
                Cryptography::numberToString(y, false), Cryptography::numberToString(g, false));
 
 
@@ -200,20 +201,20 @@ cspair member::SKLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &x) const {
     p.c = conv<ZZ>(n);
     p.s.resize(1);
     p.s[0] = (r - p.c * x) % para->n;
-    Log->debug("SKLOG/x: {}", Cryptography::numberToString(x, false));
-    Log->debug("SKLOG/c: {}", Cryptography::numberToString(p.c, false));
+    DEBUG("SKLOG/x: {}", Cryptography::numberToString(x, false));
+    DEBUG("SKLOG/c: {}", Cryptography::numberToString(p.c, false));
 
     if (p.s[0] < 0) {
-        Log->debug("fucked");
+        DEBUG("fucked");
         goto fucked;
     }
 //	p.s[0] = r - p.c * this->x;
     p.cnt = 1;
-    Log->debug("SKLOG/c: {}\ns: {}", Cryptography::numberToString(p.c, false),
-               Cryptography::numberToString(p.s[0], false));
+    DEBUG("SKLOG/c: {}\ns: {}", Cryptography::numberToString(p.c, false),
+          Cryptography::numberToString(p.s[0], false));
     ZZ temp = MulMod(PowerMod(g, p.s[0], para->n), PowerMod(y, p.c, para->n), para->n);
-    Log->debug("SKLOG/c*x: {}", Cryptography::numberToString(p.c * this->x, false));
-    Log->debug("SKLOG/g^r 2: {}", Cryptography::numberToString(temp, false));
+    DEBUG("SKLOG/c*x: {}", Cryptography::numberToString(p.c * this->x, false));
+    DEBUG("SKLOG/g^r 2: {}", Cryptography::numberToString(temp, false));
 
     return p;
 }
@@ -230,7 +231,7 @@ ZZ findRandInlamda(const long &lambda, const ZZ &x, int type = 1) {
 }
 
 cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, const ZZ &alpha) const {
-    Log->debug("SKLOGLOG");
+    DEBUG("SKLOGLOG");
     cspair p;
     ZZ ax = PowerMod(a, alpha, para->n);//ie. y =  a^x
 
@@ -241,17 +242,17 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, cons
     long l = RandomBnd(k - 1) + 1;
     ZZ *r = new ZZ[l], *t = new ZZ[l];
     for (int i = 0; i < l; i++) {
-//        Log->debug("SKLOGLOG/numbits of a: {}", NumBits(a));
+//        DEBUG("SKLOGLOG/numbits of a: {}", NumBits(a));
         r[i] = findRandInlamda(para->lambda, alpha);
-//        Log->debug("SKLOGLOG/numbits of ri: {}", NumBits(r[i]));
+//        DEBUG("SKLOGLOG/numbits of ri: {}", NumBits(r[i]));
 
         ZZ ar = PowerMod(a, r[i], para->n);
 //        ZZ nn;
 //        RandomBits(nn, 65537);
 //        r[i] = PowerMod(a, r[i], nn);
-//        Log->debug("SKLOGLOG/numbits of a^r: {}", NumBits(r[i]));
+//        DEBUG("SKLOGLOG/numbits of a^r: {}", NumBits(r[i]));
         t[i] = PowerMod(g % para->n, ar, para->n);
-//        Log->debug("OK ti");
+//        DEBUG("OK ti");
         concatStr += Cryptography::numberToString(t[i], false);
     }
 
@@ -271,7 +272,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, cons
         ZZ exp = MulMod(ax, as, para->n);
         ZZ tt = IsZero((p.c >> i) & 0x1) ? PowerMod(g, as, para->n) : PowerMod(g, exp, para->n);
         if (tt != t[i]) {
-            Log->critical("Local mismatch in SKLOGLOG!!!");
+            CRITICAL("Local mismatch in SKLOGLOG!!!");
         }
     }
 
@@ -279,7 +280,7 @@ cspair member::SKLOGLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &a, cons
 }
 
 cspair member::SKROOTLOG(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, const ZZ &beta) const {
-    Log->debug("SKROOTLOG");
+    DEBUG("SKROOTLOG");
     cspair p;
 
     string concatStr = Cryptography::numberToString(m, false) + Cryptography::numberToString(y, false) +
@@ -329,13 +330,13 @@ bool member::SKLOGLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &ax, co
     size_t n = h(concatStr);
 
     ZZ cc = conv<ZZ>(n);
-    Log->debug("SKLOGLOGver/cc: {}", Cryptography::numberToString(cc, false));
-    Log->debug("SKLOGLOGver/p.c: {}", Cryptography::numberToString(p.c, false));
+    DEBUG("SKLOGLOGver/cc: {}", Cryptography::numberToString(cc, false));
+    DEBUG("SKLOGLOGver/p.c: {}", Cryptography::numberToString(p.c, false));
     if (cc == p.c) {
-        Log->debug("SKLOGLOGver pass");
+        DEBUG("SKLOGLOGver pass");
         return true;
     }
-    Log->critical("SKLOGLOGver fail!!!");
+    CRITICAL("SKLOGLOGver fail!!!");
     return false;
 }
 
@@ -353,9 +354,9 @@ bool member::SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, co
 
     ZZ cc = conv<ZZ>(n);
     if (cc == p.c) {
-        Log->debug("SKROOTLOGver pass");
+        DEBUG("SKROOTLOGver pass");
         return true;
     }
-    Log->critical("SKROOTLOGver fail!!!");
+    CRITICAL("SKROOTLOGver fail!!!");
     return false;
 }

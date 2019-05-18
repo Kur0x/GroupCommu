@@ -54,10 +54,12 @@ ZZ GM::verify(string id, string msg) {
     stream >> token;
     // TODO decript with rsa_a
     ZZ _y = Cryptography::stringToNumber(token, false);
-    ZZ y = PowerMod(_y, rsa_a, n);
+    ZZ y = _y - psk;// fix bug.
+    // ZZ y = PowerMod(_y, rsa_a, n);
     stream >> token;
     ZZ _z = Cryptography::stringToNumber(token, false);
-    ZZ z = PowerMod(_z, rsa_a, n);
+    ZZ z = _z - psk;// fix bug.
+    // ZZ z = PowerMod(_z, rsa_a, n);
     // JoinGroupMsg y和z的合法性
     if (z != PowerMod(g, y, rsa_n)) {
         CRITICAL("y,z inconsistent");

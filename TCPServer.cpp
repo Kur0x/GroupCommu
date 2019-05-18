@@ -209,7 +209,7 @@ void TCPServer::SendPacket(string id, const char *playload, size_t len) {
         if (client_fds[i].id == id)
             break;
     }
-//    Log->debug("sending packet to {}", id);
+//    DEBUG("sending packet to {}", id);
     if (client_fds[i].send_len + len > ClientData::BUFFER_LEN) {
         CRITICAL("send buffer will overflow!");
         return;

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-std::string LOGNAME = "test";
+std::string LOGNAME = "console";
 
 extern int main_gm(string ip, u_int16_t port, const ZZ &psk, int lambda);
 
@@ -18,8 +18,8 @@ int main_m(string ip, u_int16_t port, string id, const ZZ &psk);
 int main(int argc, char *argv[]) {
     // Console logger with color
     // usage https://github.com/gabime/spdlog
-    auto Log = stdout_color_mt("console");
-    Log->info("Program started");
+    stdout_color_mt(LOGNAME);
+    INFO("Program started");
 
     int oc;                     /*选项字符 */
     char *ip = nullptr;
@@ -59,8 +59,8 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
-    if (psk == "") {
-        Log->critical("Wrong usage: no psk");
+    if (psk.empty()) {
+        CRITICAL("Wrong usage: no psk");
         return -1;
     }
     ZZ _psk = conv<ZZ>(atoi(psk.c_str()));
@@ -79,16 +79,16 @@ int main(int argc, char *argv[]) {
 
     if (separate_gm) {
         LOGNAME = "GM";
-        auto Log = stdout_color_mt(LOGNAME);
+        stdout_color_mt(LOGNAME);
         main_gm("0.0.0.0", 9999, _psk, 64);
         return 0;
     }
     if (!name) {
-        Log->critical("Wrong usage: no id");
+        CRITICAL("Wrong usage: no id");
         return -1;
     }
     LOGNAME = name;
-    Log = stdout_color_mt(LOGNAME);
+    stdout_color_mt(LOGNAME);
 
     pid_t pid;
     if (type) {//GM
@@ -98,15 +98,15 @@ int main(int argc, char *argv[]) {
             prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif
             LOGNAME = "GM";
-            auto Log = stdout_color_mt(LOGNAME);
+            stdout_color_mt(LOGNAME);
             main_gm("0.0.0.0", 9999, _psk, 64);
             return 0;
         }
         sleep(1);
-        main_m("192.168.1.2", 9999, name, _psk);
+        main_m("127.0.0.1", 9999, name, _psk);
     } else {
         if (!ip) {
-            Log->critical("Wrong usage: no ip");
+            CRITICAL("Wrong usage: no ip");
             return -1;
         }
         main_m(ip, 9999, name, _psk);

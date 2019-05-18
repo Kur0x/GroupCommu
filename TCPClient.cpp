@@ -59,7 +59,7 @@ void TCPClient::tcp_block() {
     int n;
     while (true) {
         if (cli_data->stat == ClientData::TO_SEND) {
-//            Log->info("sending msg to server");
+//            INFO("sending msg to server");
             n = tcp_send_server(cli_data->serverfd, cli_data->send_playload, cli_data->send_len);
             if (n < 0) {
                 CRITICAL("ERROR send");
@@ -86,7 +86,7 @@ void TCPClient::tcp_block() {
         } else {
             cli_data->recv_len += n;
         }
-//        Log->info("Received msg from server");
+//        INFO("Received msg from server");
         if (onRecvCallBack != nullptr) {
             onRecvCallBack(cli_data);
         }
@@ -138,7 +138,7 @@ void TCPClient::setOnFinCallBack(void(*callBack)(ClientData *)) {
 
 void TCPClient::SendPacket(char *playload, size_t len) {
     if (cli_data->send_len + len > ClientData::BUFFER_LEN) {
-        //        log->critical("send buffer will overflow!");
+        //        CRITICAL("send buffer will overflow!");
         return;
     }
     memcpy(cli_data->send_playload + cli_data->send_len, playload, len);

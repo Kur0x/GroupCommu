@@ -61,7 +61,7 @@ void send_m(string to, string msg) {
     encripted += msg;
     encripted += " ";
     encripted += m->sig(msg);
-//    Log->debug("send_m/send buffer: {}", encripted);
+//    DEBUG("send_m/send buffer: {}", encripted);
 
 //    char *_encripted = new char[encripted.size() + 1];
 //    memcpy(_encripted, encripted.c_str(), encripted.size());
@@ -85,7 +85,6 @@ void send_m(string to, string msg) {
 
 void handle_m(const char *buf) {
     header_t *header = (header_t *) buf;
-    auto Log = get("console");
     char from[ID_LEN];
     char to[ID_LEN];
     memcpy(from, buf + HEADLEN, ID_LEN);
@@ -98,17 +97,19 @@ void handle_m(const char *buf) {
     string _msg;
     _msg.resize(temp.size());
     std::copy(temp.begin(), temp.end(), _msg.begin());
-    Log->debug("onRecv_mm/msg(decrypted): {}", _msg);
+    DEBUG("onRecv_mm/msg(decrypted): {}", _msg);
     stringstream sss(_msg);
     string mmp, sig;
 //    sss >> mmp >> sig;
     sss >> mmp;
     getline(sss, sig);
-    Log->debug("onRecv/sig: {}", sig);
+    DEBUG("onRecv/sig: {}", sig);
     if (!m->ver(mmp, sig)) {
-        Log->error("msg verify error!");
-    } else
+        ERROR("msg verify error!");
+    } else {
         INFO("msg verify passed!");
+        INFO("\n****************\n[{}]: {}\n****************\n\n", from, mmp);
+    }
 }
 
 
@@ -215,7 +216,6 @@ void onRecv_m(ClientData *data) {
 }
 
 void onConnected(ClientData */*data*/) {
-    auto Log = get("console");
     INFO("client requesting public para msg...");
     send_req(PROTO_PUB_PARA, m_id);
 }
@@ -243,9 +243,9 @@ int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
     act.sa_handler = sigroutine;
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
+
     sigaction(SIGTSTP, &act, &oact);
 //#endif
-
     m_id = id;
     m_psk = psk;
     INFO("starting member connecting " + ip);
@@ -254,7 +254,7 @@ int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
     client->setOnRecvCallBack(onRecv_m);
     client->setOnFinCallBack(onFin);
     client->ConnectServer();
-    INFO("st!!!!!!!!!!!!!!!! ");
+    //TODO fork GM or connect to new GM
 
     return 0;
 }

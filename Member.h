@@ -41,7 +41,6 @@ namespace group_sig {
         ZZ groupKey;
 
     private:
-        std::shared_ptr<logger> Log;
         const std::string id;
         ZZ x;
         ZZ y;

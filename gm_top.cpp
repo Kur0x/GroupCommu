@@ -17,8 +17,7 @@ string hardware_id;//id，由命令行输入
 //vector<pair<string,string>> client_list;
 
 void send_r(const string &id, u_int8_t type, string msg = "") {
-//    auto Log = get("console");
-//    Log->info("GM sending type {0:x} to {1}", type, id);
+//    INFO("GM sending type {0:x} to {1}", type, id);
     header_t head{};
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
@@ -36,8 +35,7 @@ void send_r(const string &id, u_int8_t type, string msg = "") {
 }
 
 void send_r(const string &id, u_int8_t type, const char *payload, u_int16_t len) {
-//    auto Log = get("console");
-//    Log->info("GM sending type {0:x} to {1}", type, id);
+//    INFO("GM sending type {0:x} to {1}", type, id);
     header_t head{};
     head.proto_ori = PROTO_S2C;
     head.proto_type = type;
@@ -62,7 +60,6 @@ void handle_commu(const char *buf) {
 }
 
 void onRecv_gm(ClientData *data) {
-//    auto Log = get("console");
     header_t *header;
     header = (header_t *) (data->recv_playload);
     stringstream ss;
