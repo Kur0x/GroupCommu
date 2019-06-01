@@ -40,6 +40,7 @@ namespace group_sig {
 
         ZZ groupKey;
 
+        bool getNewGM(std::string &ip);
     private:
         const std::string id;
         ZZ x;

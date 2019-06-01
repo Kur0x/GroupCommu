@@ -360,3 +360,10 @@ bool member::SKROOTLOGver(const ZZ &m, const ZZ &y, const ZZ &g, const ZZ &e, co
     CRITICAL("SKROOTLOGver fail!!!");
     return false;
 }
+
+bool member::getNewGM(std::string &ip) {
+    if (client_map.begin()->first == id)
+        return true;
+    ip = client_map.begin()->second;
+    return false;
+}

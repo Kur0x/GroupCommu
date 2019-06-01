@@ -10,6 +10,8 @@
 
 using namespace std;
 
+extern int main_gm(string ip, u_int16_t port, const ZZ &psk, int lambda);
+
 
 TCPClient *client;
 TCPServer *server_m;
@@ -249,13 +251,35 @@ int main_m(string ip, u_int16_t port, string id, const ZZ &psk) {
     m_id = id;
     m_psk = psk;
     INFO("starting member connecting " + ip);
+
     client = new TCPClient(inet_addr(ip.c_str()), port);
     client->setOnConnectedCallBack(onConnected);
     client->setOnRecvCallBack(onRecv_m);
     client->setOnFinCallBack(onFin);
     client->ConnectServer();
     //TODO fork GM or connect to new GM
-
+    if (m->getNewGM(ip)) {
+        pid_t pid;
+        pid = fork();
+        if (pid == 0) {
+#ifdef __linux__
+            prctl(PR_SET_PDEATHSIG, SIGHUP);
+#endif
+            LOGNAME = "GM";
+            try {
+                stdout_color_mt(LOGNAME);
+            } catch (const spdlog::spdlog_ex &ex) {
+                std::cerr << "Log init failed: " << ex.what() << std::endl;
+            }
+            main_gm("0.0.0.0", 9999, psk, 64);
+            return 0;
+        }
+        sleep(1);
+        main_m("127.0.0.1", port, id, psk);
+    } else {
+        sleep(1);
+        main_m(ip, port, id, psk);
+    }
     return 0;
 }
 
