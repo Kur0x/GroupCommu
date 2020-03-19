@@ -1,13 +1,20 @@
 # GroupCommu
+
 基于群签名和群密钥的安全通信系统。
+Group Communication Security Protocol
 
-## TODO
-- 传列表
-- fork新GM
-- 更新列表
-- 重建连接
+## 项目包括 What's inside
+1. 基于CamSta97的群签名方案进行匿名签名与认证；<br/>
+Anonymous signature and authentication algorithm based on CamSta97 which implements group signature scheme; 
 
-## 环境搭建
+2. 基于GDH.2的群密钥交换方案进行密钥交换，并使用生成的群密钥进行消息加密和解密；<br/>
+Key exchange algorithm based on GDH.2 which implements group key exchange scheme, and the group key encryption and decryption;
+
+3. 安全通信系统demo；<br/>
+All these algorithms are integrated to a demo;
+
+
+## 环境搭建 Requirements
 本项目依赖于3个库，GMP，NTL，MMX。
 
 GMP（GNU MP Bignum Library）为开源数学运算库。它可以满足任意精度的数学运算，包括有有理数、浮点数和符号整数。被NTL库所依赖。
@@ -32,7 +39,7 @@ MMX为自主编写的密码学相关的库，其中具有rsa的密钥生成，�
 
 安装方法：进入```lib/MMXlib```后执行```make```。
 
-## 项目编译方法
+## 项目编译方法 Build
 
 按照上述步骤搭建好环境后，进入项目文件夹执行如下命令：
 ```
@@ -43,7 +50,7 @@ $ make
 ```
 编译后生成可执行文件为```GroupCommu```
 
-## 软件运行方法
+## 软件运行方法 Tests
 ### 语法
 ```./GroupCommu``` (选项)(参数)
 ### 选项
@@ -55,3 +62,5 @@ $ make
 -p <PSK>: 指定PSK 
 -l <level>: 指定log的等级{debug|info|warn|err|critical}
 ```
+## License
+MIT License
