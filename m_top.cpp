@@ -7,6 +7,9 @@
 #include "NetworkUtility.h"
 #include "TCPServer.h"
 #include <csignal>
+#ifdef __linux__
+#include <sys/prctl.h>
+#endif
 
 using namespace std;
 
